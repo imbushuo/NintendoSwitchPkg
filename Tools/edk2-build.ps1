@@ -1,0 +1,101 @@
+#!/usr/bin/pwsh
+# Copyright 2018, Bingxing Wang <i@imbushuo.net>
+# All rights reserved.
+#
+# This script builds EDK2 content.
+# EDK2 setup script should be called before invoking this script.
+#
+
+Param
+(
+    [switch] $Clean,
+    [switch] $UseNewerGcc
+)
+
+Write-Host "Task: EDK2 build"
+
+# Targets. Ensure corresponding DSC/FDF files exist
+$availableTargets = @(
+	"NintendoSwitch"
+)
+
+# Check package path.
+if ((Test-Path -Path "NintendoSwitchPkg") -eq $null)
+{
+    Write-Error "NintendoSwitchPkg is not found."
+    return -1
+}
+
+# Set environment again.
+Write-Output "[EDK2Build] Set environment."
+$env:PATH="/opt/db-boot-tools:/opt/gcc-linaro-6.4.1-2017.11-x86_64_aarch64-elf/bin:/opt/gcc-linaro-6.4.1-2017.11-x86_64_arm-eabi/bin:$($env:PATH)"
+$env:GCC5_AARCH64_PREFIX="/opt/gcc-linaro-6.4.1-2017.11-x86_64_aarch64-elf/bin/aarch64-elf-"
+
+# Build base tools if not exist (dev).
+if (((Test-Path -Path "BaseTools") -eq $false) -or ($Clean -eq $true))
+{
+    Write-Output "[EDK2Build] Build base tools."
+    make -C BaseTools
+    if (-not $?)
+    {
+        Write-Error "[EDK2Build] Base tools target failed."
+        return $?
+    }
+}
+
+if ($Clean -eq $true)
+{
+	foreach ($target in $availableTargets)
+	{
+		Write-Output "[EDK2Build] Clean target $($target)."
+		build -a AARCH64 -p NintendoSwitchPkg/$($target).dsc -t GCC5 clean
+
+		if (-not $?)
+		{
+			Write-Error "[EDK2Build] Clean target $($target) failed."
+			return $?
+		}
+	}
+
+    # Apply workaround for "NUL"
+	Get-ChildItem -Path Build/**/NUL -Recurse | Remove-Item -Force
+}
+
+# Check current commit ID and write it into file for SMBIOS reference. (Trim it)
+# Check current date and write it into file for SMBIOS reference too. (MM/dd/yyyy)
+
+Write-Output "[EDK2Build] Stamp build."
+$commit = git rev-parse HEAD
+$date = (Get-Date).Date.ToString("MM/dd/yyyy")
+if ($commit)
+{
+	$commit = $commit.Substring(0,8)
+
+	$releaseInfoContent = @(
+		"#ifndef __SMBIOS_RELEASE_INFO_H__",
+		"#define __SMBIOS_RELEASE_INFO_H__",
+		"#ifdef __IMPL_COMMIT_ID__",
+		"#undef __IMPL_COMMIT_ID__",
+		"#endif",
+		"#define __IMPL_COMMIT_ID__ `"$($commit)`"",
+		"#ifdef __RELEASE_DATE__",
+		"#undef __RELEASE_DATE__",
+		"#endif",
+		"#define __RELEASE_DATE__ `"$($date)`"",
+		"#endif"
+	)
+
+	Set-Content -Path NintendoSwitchPkg/Include/FwReleaseInfo.h -Value $releaseInfoContent -ErrorAction SilentlyContinue -Force
+}
+
+foreach ($target in $availableTargets)
+{
+	Write-Output "[EDK2Build] Build NintendoSwitchPkg for $($target) (DEBUG)."
+	build -a AARCH64 -p NintendoSwitchPkg/$($target).dsc -t GCC5
+
+	if (-not $?)
+	{
+		Write-Error "[EDK2Build] Build target $($target) failed."
+		return $?
+	}
+}

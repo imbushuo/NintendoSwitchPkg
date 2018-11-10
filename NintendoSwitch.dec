@@ -1,0 +1,20 @@
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = NintendoSwitchPkg
+  PACKAGE_GUID                   = 1bde5238-07ee-4ca3-a827-452fb4717ad7
+  PACKAGE_VERSION                = 0.1
+
+[Includes.common]
+  Include                        # Root include for the package
+
+[Guids.common]
+  gNintendoSwitchPkgTokenSpaceGuid = { 0x1900628e, 0x0a8a, 0x4099, { 0x8d, 0xe5, 0xf2, 0x08, 0xff, 0x80, 0xc4, 0xbf } }
+
+[PcdsFixedAtBuild.common]
+  # Simple FrameBuffer
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0xc0000000|UINT32|0x0000a400
+  # It's actually vertical.
+  # Maybe in the future we can workaround this in EL2
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|720|UINT32|0x0000a401
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|1280|UINT32|0x0000a402
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferPixelBpp|32|UINT32|0x0000a403

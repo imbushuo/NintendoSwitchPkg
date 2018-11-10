@@ -1,0 +1,25 @@
+[Defines]
+  INF_VERSION    = 0x00010005
+  BASE_NAME      = I2cLib
+  MODULE_TYPE    = BASE
+  VERSION_STRING = 1.0
+  LIBRARY_CLASS  = I2cLib
+
+[Sources.common]
+  I2cLib.c
+
+[BuildOptions.AARCH64]
+  GCC:*_*_*_CC_FLAGS = -Wno-int-to-pointer-cast
+
+[Packages]
+  MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
+  NintendoSwitchPkg/NintendoSwitch.dec
+
+[LibraryClasses]
+  ArmLib
+  IoLib
+  BaseMemoryLib
+  CompilerIntrinsicsLib
+  CacheMaintenanceLib
+  EarlyTimerLib
