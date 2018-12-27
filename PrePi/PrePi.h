@@ -41,7 +41,8 @@ VOID
 PrePiMain (
   IN  UINTN                     UefiMemoryBase,
   IN  UINTN                     StacksBase,
-  IN  UINT64                    StartTimeStamp
+  IN  UINT64                    StartTimeStamp,
+  IN  UINTN						MpId
   );
 
 EFI_STATUS
@@ -57,17 +58,6 @@ PlatformPeim (
   VOID
   );
 
-VOID
-PrimaryMain (
-  IN  UINTN                     UefiMemoryBase,
-  IN  UINTN                     StacksBase,
-  IN  UINT64                    StartTimeStamp
-  );
-
-VOID
-SecondaryMain (
-  IN  UINTN                     MpId
-  );
 
 // Either implemented by PrePiLib or by MemoryInitPei
 VOID
@@ -91,6 +81,11 @@ VOID
 EFIAPI
 ProcessLibraryConstructorList (
   VOID
+  );
+
+VOID
+Panic(
+	VOID
   );
 
 #endif /* _PREPI_H_ */

@@ -58,6 +58,7 @@
   gEmbeddedTokenSpaceGuid.PcdPrePiCpuMemorySize
   gArmTokenSpaceGuid.PcdSystemMemoryBase
   gArmTokenSpaceGuid.PcdSystemMemorySize
+  gNintendoSwitchPkgTokenSpaceGuid.PcdTrustZoneCarveoutSize
 
 [Ppis]
   gArmMpCoreInfoPpiGuid

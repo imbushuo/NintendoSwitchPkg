@@ -23,28 +23,11 @@
 #include <Foundation/Types.h>
 #include <Device/T210.h>
 
-STATIC UINTN mTotalMemorySize = 0;
-
-STATIC UINTN QueryMemorySize(
-	VOID
-)
-{
-	struct mc_ctlr *mc = (struct mc_ctlr *) NV_PA_MC_BASE;
-	u32 emem_cfg;
-	UINTN size_bytes;
-
-	emem_cfg = readl(&mc->mc_emem_cfg);
-
-	/* RAM size EMC is programmed to. */
-	size_bytes = (UINTN) emem_cfg * 1024 * 1024;
-
-	return size_bytes;
-}
-
 VOID
 ArmPlatformGetVirtualMemoryMap(
 	IN ARM_MEMORY_REGION_DESCRIPTOR** VirtualMemoryMap
 )
 {
+	// You are not expected to call this
 	ASSERT(FALSE);
 }

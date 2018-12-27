@@ -20,10 +20,11 @@
   HobLib
   CompilerIntrinsicsLib
   CacheMaintenanceLib
-  DisplayInitLib
 
 [Pcd]
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferAddress
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferWidth
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferHeight
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferPixelBpp
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferVisibleWidth
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferVisibleHeight

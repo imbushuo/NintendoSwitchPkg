@@ -18,3 +18,8 @@
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|720|UINT32|0x0000a401
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|1280|UINT32|0x0000a402
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferPixelBpp|32|UINT32|0x0000a403
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferVisibleWidth|720|UINT32|0x0000a405
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferVisibleHeight|1280|UINT32|0x0000a406
+
+  # Carveout information
+  gNintendoSwitchPkgTokenSpaceGuid.PcdTrustZoneCarveoutSize|0|UINT64|0x0000a404

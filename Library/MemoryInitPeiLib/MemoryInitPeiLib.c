@@ -22,6 +22,9 @@
 #include <Library/MemoryAllocationLib.h>
 #include <Library/PcdLib.h>
 
+// See memory map here.
+#include <Device/MemoryMap.h>
+
 extern UINT64 mSystemMemoryEnd;
 
 VOID
@@ -50,68 +53,22 @@ InitMmu(
 
 STATIC
 VOID
-AddAndRTSData(ARM_MEMORY_REGION_DESCRIPTOR *Desc)
+AddHob
+(
+	PARM_MEMORY_REGION_DESCRIPTOR_EX Desc
+)
 {
 	BuildResourceDescriptorHob(
-		EFI_RESOURCE_SYSTEM_MEMORY,
-		EFI_RESOURCE_ATTRIBUTE_PRESENT |
-		EFI_RESOURCE_ATTRIBUTE_INITIALIZED |
-		EFI_RESOURCE_ATTRIBUTE_WRITE_COMBINEABLE |
-		EFI_RESOURCE_ATTRIBUTE_WRITE_THROUGH_CACHEABLE |
-		EFI_RESOURCE_ATTRIBUTE_WRITE_BACK_CACHEABLE |
-		EFI_RESOURCE_ATTRIBUTE_TESTED,
-		Desc->PhysicalBase,
+		Desc->ResourceType,
+		Desc->ResourceAttribute,
+		Desc->Address,
 		Desc->Length
 	);
 
 	BuildMemoryAllocationHob(
-		Desc->PhysicalBase,
+		Desc->Address,
 		Desc->Length,
-		EfiRuntimeServicesData
-	);
-}
-
-STATIC
-VOID
-AddAndReserved(ARM_MEMORY_REGION_DESCRIPTOR *Desc)
-{
-	BuildResourceDescriptorHob(
-		EFI_RESOURCE_SYSTEM_MEMORY,
-		EFI_RESOURCE_ATTRIBUTE_PRESENT |
-		EFI_RESOURCE_ATTRIBUTE_INITIALIZED |
-		EFI_RESOURCE_ATTRIBUTE_WRITE_COMBINEABLE |
-		EFI_RESOURCE_ATTRIBUTE_WRITE_THROUGH_CACHEABLE |
-		EFI_RESOURCE_ATTRIBUTE_WRITE_BACK_CACHEABLE |
-		EFI_RESOURCE_ATTRIBUTE_TESTED,
-		Desc->PhysicalBase,
-		Desc->Length
-	);
-
-	BuildMemoryAllocationHob(
-		Desc->PhysicalBase,
-		Desc->Length,
-		EfiReservedMemoryType
-	);
-}
-
-STATIC
-VOID
-AddAndMmio(ARM_MEMORY_REGION_DESCRIPTOR *Desc)
-{
-	BuildResourceDescriptorHob(
-		EFI_RESOURCE_SYSTEM_MEMORY,
-		(EFI_RESOURCE_ATTRIBUTE_PRESENT |
-			EFI_RESOURCE_ATTRIBUTE_INITIALIZED |
-			EFI_RESOURCE_ATTRIBUTE_UNCACHEABLE |
-			EFI_RESOURCE_ATTRIBUTE_TESTED),
-		Desc->PhysicalBase,
-		Desc->Length
-	);
-
-	BuildMemoryAllocationHob(
-		Desc->PhysicalBase,
-		Desc->Length,
-		EfiMemoryMappedIO
+		Desc->MemoryType
 	);
 }
 
@@ -138,43 +95,51 @@ MemoryPeim(
 	IN UINT64                             UefiMemorySize
 )
 {
-	ARM_MEMORY_REGION_DESCRIPTOR *MemoryTable;
-
-	// Get Virtual Memory Map from the Platform Library
-	ArmPlatformGetVirtualMemoryMap(&MemoryTable);
+	PARM_MEMORY_REGION_DESCRIPTOR_EX MemoryDescriptorEx = gDeviceMemoryDescriptorEx;
+	ARM_MEMORY_REGION_DESCRIPTOR MemoryDescriptor[MAX_ARM_MEMORY_REGION_DESCRIPTOR_COUNT];
+	UINTN Index = 0;
 
 	// Ensure PcdSystemMemorySize has been set
 	ASSERT(PcdGet64(PcdSystemMemorySize) != 0);
 
-	// FD without variable store
-	AddAndReserved(&MemoryTable[0]);
+	// Run through each memory descriptor
+	while (MemoryDescriptorEx->Length != 0)
+	{
+		switch (MemoryDescriptorEx->HobOption)
+		{
+		case AddMem:
+		case AddDev:
+			AddHob(MemoryDescriptorEx);
+			break;
+		case NoHob:
+		default:
+			goto update;
+		}
 
-	// Variable store.
-	AddAndRTSData(&MemoryTable[1]);
+	update:
+		ASSERT(Index < MAX_ARM_MEMORY_REGION_DESCRIPTOR_COUNT);
 
-	// Trusted Firmware region
-	AddAndReserved(&MemoryTable[2]);
+		MemoryDescriptor[Index].PhysicalBase = MemoryDescriptorEx->Address;
+		MemoryDescriptor[Index].VirtualBase = MemoryDescriptorEx->Address;
+		MemoryDescriptor[Index].Length = MemoryDescriptorEx->Length;
+		MemoryDescriptor[Index].Attributes = MemoryDescriptorEx->ArmAttributes;
 
-	// Usable memory.
-	BuildResourceDescriptorHob(
-		EFI_RESOURCE_SYSTEM_MEMORY,
-		EFI_RESOURCE_ATTRIBUTE_PRESENT |
-		EFI_RESOURCE_ATTRIBUTE_INITIALIZED |
-		EFI_RESOURCE_ATTRIBUTE_WRITE_COMBINEABLE |
-		EFI_RESOURCE_ATTRIBUTE_WRITE_THROUGH_CACHEABLE |
-		EFI_RESOURCE_ATTRIBUTE_WRITE_BACK_CACHEABLE |
-		EFI_RESOURCE_ATTRIBUTE_TESTED,
-		MemoryTable[3].PhysicalBase,
-		MemoryTable[3].Length
-	);
+		Index++;
+		MemoryDescriptorEx++;
+	}
 
-	AddAndReserved(&MemoryTable[4]);
-	AddAndMmio(&MemoryTable[5]);
+	// Last one (terminator)
+	ASSERT(Index < MAX_ARM_MEMORY_REGION_DESCRIPTOR_COUNT);
+	MemoryDescriptor[Index].PhysicalBase = 0;
+	MemoryDescriptor[Index].VirtualBase = 0;
+	MemoryDescriptor[Index].Length = 0;
+	MemoryDescriptor[Index].Attributes = 0;
 
 	// Build Memory Allocation Hob
-	InitMmu(MemoryTable);
+	InitMmu(MemoryDescriptor);
 
-	if (FeaturePcdGet(PcdPrePiProduceMemoryTypeInformationHob)) {
+	if (FeaturePcdGet(PcdPrePiProduceMemoryTypeInformationHob))
+	{
 		// Optional feature that helps prevent EFI memory map fragmentation.
 		BuildMemoryTypeInformationHob();
 	}

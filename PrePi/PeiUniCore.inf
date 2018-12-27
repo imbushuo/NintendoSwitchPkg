@@ -22,7 +22,6 @@
 
 [Sources]
   PrePi.c
-  MainUniCore.c
 
 [Sources.AArch64]
   AArch64/ArchPrePi.c
@@ -55,7 +54,7 @@
   PrePiHobListPointerLib
   PlatformPeiLib
   MemoryInitPeiLib
-  EarlyTimerLib
+  CacheMaintenanceLib
 
 [Ppis]
   gArmMpCoreInfoPpiGuid
@@ -102,6 +101,8 @@
   gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiLoaderData
   gEmbeddedTokenSpaceGuid.PcdPrePiStackBase
   gEmbeddedTokenSpaceGuid.PcdPrePiStackSize
+
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferAddress
 
 [Pcd]
   gArmTokenSpaceGuid.PcdSystemMemoryBase

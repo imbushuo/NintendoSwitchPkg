@@ -18,7 +18,7 @@ if ($BuildContent -eq $false)
 
 # Set environment variable for further use.
 Write-Output "[PRE] Set environment."
-$env:PATH="/opt/gcc-linaro-6.4.1-2017.11-x86_64_aarch64-elf/bin:/opt/gcc-linaro-6.4.1-2017.11-x86_64_arm-eabi/bin:$($env:PATH)"
+$env:PATH="/opt/gcc-linaro-7.2.1-2017.11-x86_64_aarch64-elf/bin:/opt/gcc-linaro-6.4.1-2017.11-x86_64_arm-eabi/bin:$($env:PATH)"
 
 foreach ($fd in $BuildContent)
 {

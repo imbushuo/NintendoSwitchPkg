@@ -20,16 +20,13 @@
 #include <Library/PrePiHobListPointerLib.h>
 #include <Library/TimerLib.h>
 #include <Library/PerformanceLib.h>
+#include <Library/CacheMaintenanceLib.h>
 
 #include <Ppi/GuidedSectionExtraction.h>
 #include <Ppi/ArmMpCoreInfo.h>
 #include <Ppi/SecPerformance.h>
 
-#include <Foundation/Types.h>
-#include <Library/EarlyTimerLib.h>
-#include <Device/T210.h>
 #include <FwReleaseInfo.h>
-
 #include "PrePi.h"
 
 #define IS_XIP() (((UINT64)FixedPcdGet64 (PcdFdBaseAddress) > mSystemMemoryEnd) || \
@@ -38,133 +35,138 @@
 UINT64 mSystemMemoryEnd = FixedPcdGet64(PcdSystemMemoryBase) +
                           FixedPcdGet64(PcdSystemMemorySize) - 1;
 
-EFI_STATUS
-GetPlatformPpi (
-  IN  EFI_GUID  *PpiGuid,
-  OUT VOID      **Ppi
-  )
+STATIC ARM_CORE_INFO mSwitchCoreInfoTable[] = {
+  { 0x0, 0x0, },             // Cluster 0, Core 0
+  { 0x0, 0x1, },             // Cluster 0, Core 1
+  { 0x0, 0x2, },             // Cluster 0, Core 2
+  { 0x0, 0x3, },             // Cluster 0, Core 3
+};
+
+VOID
+BreakColor(
+	VOID
+)
 {
-  UINTN                   PpiListSize;
-  UINTN                   PpiListCount;
-  EFI_PEI_PPI_DESCRIPTOR  *PpiList;
-  UINTN                   Index;
+	UINT32* FrameBuffer = (void*)FixedPcdGet32(PcdMipiFrameBufferAddress);
+	for (UINTN i = 0; i < 720; i++)
+	{
+		for (UINTN j = 0; j < 50; j++)
+		{
+			*FrameBuffer = 0xFFFFFFFF;
+			FrameBuffer++;
+		}
+	}
 
-  PpiListSize = 0;
-  ArmPlatformGetPlatformPpiList (&PpiListSize, &PpiList);
-  PpiListCount = PpiListSize / sizeof(EFI_PEI_PPI_DESCRIPTOR);
-  for (Index = 0; Index < PpiListCount; Index++, PpiList++) {
-    if (CompareGuid (PpiList->Guid, PpiGuid) == TRUE) {
-      *Ppi = PpiList->Ppi;
-      return EFI_SUCCESS;
-    }
-  }
+	while (TRUE) {}
+}
 
-  return EFI_NOT_FOUND;
+VOID
+Panic(
+	VOID
+)
+{
+	UINT32* FrameBuffer = (void*)FixedPcdGet32(PcdMipiFrameBufferAddress);
+	for (UINTN i = 0; i < 720; i++)
+	{
+		for (UINTN j = 0; j < 50; j++)
+		{
+			*FrameBuffer = 0xFFBE4EE3;
+			FrameBuffer++;
+		}
+	}
+
+	while (TRUE) {}
 }
 
 VOID
 PrePiMain (
   IN  UINTN                     UefiMemoryBase,
-  IN  UINTN                     StacksBase,
-  IN  UINT64                    StartTimeStamp
+  IN  UINTN                     StackBase,
+  IN  UINT64                    StartTimeStamp,
+  IN  UINTN						MpId
   )
 {
-  EFI_HOB_HANDOFF_INFO_TABLE*   HobList;
-  ARM_MP_CORE_INFO_PPI*         ArmMpCoreInfoPpi;
-  UINTN                         ArmCoreCount;
-  ARM_CORE_INFO*                ArmCoreInfoTable;
-  EFI_STATUS                    Status;
-  CHAR8                         Buffer[100];
-  UINTN                         CharCount;
-  UINTN                         StacksSize;
-  FIRMWARE_SEC_PERFORMANCE      Performance;
+	EFI_HOB_HANDOFF_INFO_TABLE*   HobList;
+	UINTN                         ArmCoreCount;
+	EFI_STATUS                    Status;
+	CHAR8                         Buffer[255];
+	UINTN                         CharCount;
+	FIRMWARE_SEC_PERFORMANCE      Performance;
 
-  // If ensure the FD is either part of the System Memory or totally outside of the System Memory (XIP)
-  ASSERT (IS_XIP() ||
-          ((FixedPcdGet64 (PcdFdBaseAddress) >= FixedPcdGet64 (PcdSystemMemoryBase)) &&
-           ((UINT64)(FixedPcdGet64 (PcdFdBaseAddress) + FixedPcdGet32 (PcdFdSize)) <= (UINT64)mSystemMemoryEnd)));
+	// Architecture-specific initialization
+	// Enable Floating Point
+	ArmEnableVFP();
 
-  // Initialize the architecture specific bits
-  ArchInitialize();
+	// Enable program flow prediction, if supported
+	ArmEnableBranchPrediction();
 
-  // Initialize the Serial Port
-  SerialPortInitialize ();
+	// Initialize the Serial Port
+	SerialPortInitialize();
 
-  CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"Nintendo Switch UEFI firmware (version %s, commit %a built at %a on %a)\n\r",
-	(CHAR16*)PcdGetPtr(PcdFirmwareVersionString), __IMPL_COMMIT_ID__, __TIME__, __DATE__);
-  SerialPortWrite ((UINT8 *) Buffer, CharCount);
+	CharCount = AsciiSPrint (
+		Buffer,
+		sizeof (Buffer), 
+		"Nintendo Switch UEFI firmware on MPIDR 0x%llx, (version %s commit %a built at %a on %a)\n\r",
+		MpId,
+		(CHAR16*) PcdGetPtr(PcdFirmwareVersionString), 
+		__IMPL_COMMIT_ID__, 
+		__TIME__,
+		__DATE__
+	);
 
-  // Initialize the Debug Agent for Source Level Debugging
-  InitializeDebugAgent (DEBUG_AGENT_INIT_POSTMEM_SEC, NULL, NULL);
-  SaveAndSetDebugTimerInterrupt (TRUE);
+	SerialPortWrite ((UINT8 *) Buffer, CharCount);
+	ASSERT(ArmPlatformIsPrimaryCore(MpId) != 0);
 
-  // Declare the PI/UEFI memory region
-  HobList = HobConstructor (
-    (VOID*)UefiMemoryBase,
-    FixedPcdGet32 (PcdSystemMemoryUefiRegionSize),
-    (VOID*)UefiMemoryBase,
-    (VOID*)StacksBase  // The top of the UEFI Memory is reserved for the stacks
-    );
-  PrePeiSetHobList (HobList);
+	// Declare the PI/UEFI memory region
+	HobList = HobConstructor(
+		(VOID*) UefiMemoryBase,
+		FixedPcdGet32(PcdSystemMemoryUefiRegionSize),
+		(VOID*) UefiMemoryBase,
+		(VOID*) StackBase  // The top of the UEFI Memory is reserved for the stacks
+	);
+	PrePeiSetHobList(HobList);
 
-  // Initialize MMU and Memory HOBs (Resource Descriptor HOBs)
-  Status = MemoryPeim (UefiMemoryBase, FixedPcdGet32 (PcdSystemMemoryUefiRegionSize));
-  ASSERT_EFI_ERROR (Status);
+	// Initialize MMU and Memory HOBs (Resource Descriptor HOBs)
+	Status = MemoryPeim(UefiMemoryBase, FixedPcdGet32(PcdSystemMemoryUefiRegionSize));
 
-  // Create the Stacks HOB (reserve the memory for all stacks)
-  if (ArmIsMpCore ()) {
-    StacksSize = PcdGet32 (PcdCPUCorePrimaryStackSize) +
-                 ((FixedPcdGet32 (PcdCoreCount) - 1) * FixedPcdGet32 (PcdCPUCoreSecondaryStackSize));
-  } else {
-    StacksSize = PcdGet32 (PcdCPUCorePrimaryStackSize);
-  }
-  BuildStackHob (StacksBase, StacksSize);
+	// Create the Stacks HOB (reserve the memory for all stacks)
+	BuildStackHob(StackBase, FixedPcdGet32(PcdPrePiStackSize));
 
-  //TODO: Call CpuPei as a library
-  BuildCpuHob (PcdGet8 (PcdPrePiCpuMemorySize), PcdGet8 (PcdPrePiCpuIoSize));
+	// TODO: Call CpuPei as a library
+	BuildCpuHob(PcdGet8(PcdPrePiCpuMemorySize), PcdGet8(PcdPrePiCpuIoSize));
 
-  if (ArmIsMpCore ()) {
-    // Only MP Core platform need to produce gArmMpCoreInfoPpiGuid
-    Status = GetPlatformPpi (&gArmMpCoreInfoPpiGuid, (VOID**)&ArmMpCoreInfoPpi);
+	// Build the MP Core Info Table
+	ArmCoreCount = FixedPcdGet32(PcdCoreCount);
 
-    // On MP Core Platform we must implement the ARM MP Core Info PPI (gArmMpCoreInfoPpiGuid)
-    ASSERT_EFI_ERROR (Status);
+	// Build MPCore Info HOB
+	BuildGuidDataHob(&gArmMpCoreInfoGuid, &mSwitchCoreInfoTable, sizeof(ARM_CORE_INFO) * ArmCoreCount);
 
-    // Build the MP Core Info Table
-    ArmCoreCount = 0;
-    Status = ArmMpCoreInfoPpi->GetMpCoreInfo (&ArmCoreCount, &ArmCoreInfoTable);
-    if (!EFI_ERROR(Status) && (ArmCoreCount > 0)) {
-      // Build MPCore Info HOB
-      BuildGuidDataHob (&gArmMpCoreInfoGuid, ArmCoreInfoTable, sizeof (ARM_CORE_INFO) * ArmCoreCount);
-    }
-  }
+	// Store timer value logged at the beginning of firmware image execution
+	Performance.ResetEnd = GetTimeInNanoSecond(StartTimeStamp);
 
-  // Store timer value logged at the beginning of firmware image execution
-  Performance.ResetEnd = GetTimeInNanoSecond (StartTimeStamp);
+	// Build SEC Performance Data Hob
+	BuildGuidDataHob(&gEfiFirmwarePerformanceGuid, &Performance, sizeof(Performance));
 
-  // Build SEC Performance Data Hob
-  BuildGuidDataHob (&gEfiFirmwarePerformanceGuid, &Performance, sizeof (Performance));
+	// Set the Boot Mode
+	SetBootMode(ArmPlatformGetBootMode());
 
-  // Set the Boot Mode
-  SetBootMode (ArmPlatformGetBootMode ());
+	// Initialize Platform HOBs (CpuHob and FvHob)
+	Status = PlatformPeim();
+	ASSERT_EFI_ERROR(Status);
 
-  // Initialize Platform HOBs (CpuHob and FvHob)
-  Status = PlatformPeim ();
-  ASSERT_EFI_ERROR (Status);
+	// Now, the HOB List has been initialized, we can register performance information
+	PERF_START(NULL, "PEI", NULL, StartTimeStamp);
 
-  // Now, the HOB List has been initialized, we can register performance information
-  PERF_START (NULL, "PEI", NULL, StartTimeStamp);
+	// SEC phase needs to run library constructors by hand.
+	ProcessLibraryConstructorList();
 
-  // SEC phase needs to run library constructors by hand.
-  ProcessLibraryConstructorList ();
+	// Assume the FV that contains the SEC (our code) also contains a compressed FV.
+	Status = DecompressFirstFv();
+	ASSERT_EFI_ERROR(Status);
 
-  // Assume the FV that contains the SEC (our code) also contains a compressed FV.
-  Status = DecompressFirstFv ();
-  ASSERT_EFI_ERROR (Status);
-
-  // Load the DXE Core and transfer control to it
-  Status = LoadDxeCoreFromFv (NULL, 0);
-  ASSERT_EFI_ERROR (Status);
+	// Load the DXE Core and transfer control to it
+	Status = LoadDxeCoreFromFv(NULL, 0);
+	ASSERT_EFI_ERROR(Status);
 }
 
 VOID
@@ -174,47 +176,37 @@ CEntryPoint (
   IN  UINTN                     StacksBase
   )
 {
-	  UINT64   StartTimeStamp;
+	UINT64   StartTimeStamp;
 
-	  if (PerformanceMeasurementEnabled())
-	  {
-		  // Initialize the Timer Library to setup the Timer HW controller
-		  TimerConstructor();
+	// Initialize the platform specific controllers
+	ArmPlatformInitialize(MpId);
 
-		  // We cannot call yet the PerformanceLib because the HOB List has not been initialized
-		  StartTimeStamp = GetPerformanceCounter();
-	  }
-	  else {
-		  StartTimeStamp = 0;
-	  }
+	if (ArmPlatformIsPrimaryCore(MpId) && PerformanceMeasurementEnabled())
+	{
+		// Initialize the Timer Library to setup the Timer HW controller
+		TimerConstructor();
 
-	  // Data Cache enabled on Primary core when MMU is enabled.
-	  ArmDisableDataCache();
-	  // Invalidate Data cache
-	  ArmInvalidateDataCache();
-	  // Invalidate instruction cache
-	  ArmInvalidateInstructionCache();
-	  // Enable Instruction Caches on all cores.
-	  ArmEnableInstructionCache();
+		// We cannot call yet the PerformanceLib because the HOB List has not been initialized
+		StartTimeStamp = GetPerformanceCounter();
+	}
+	else 
+	{
+		StartTimeStamp = 0;
+	}
 
-	  // Define the Global Variable region when we are not running in XIP
-	  if (!IS_XIP()) {
-		  if (ArmPlatformIsPrimaryCore(MpId)) {
-			  if (ArmIsMpCore()) {
-				  // Signal the Global Variable Region is defined (event: ARM_CPU_EVENT_DEFAULT)
-				  ArmCallSEV();
-			  }
-		  }
-		  else {
-			  // Wait the Primay core has defined the address of the Global Variable region (event: ARM_CPU_EVENT_DEFAULT)
-			  ArmCallWFE();
-		  }
-	  }
+	// Data Cache enabled on Primary core when MMU is enabled.
+	ArmDisableDataCache();
+	// Invalidate Data cache
+	ArmInvalidateDataCache();
+	// Invalidate instruction cache
+	ArmInvalidateInstructionCache();
+	// Enable Instruction Caches on all cores.
+	ArmEnableInstructionCache();
 
-	  // Must be primary, lol
-	  PrePiMain(UefiMemoryBase, StacksBase, StartTimeStamp);
+	// Must be primary, lol
+	// Goto primary Main.
+	PrePiMain(UefiMemoryBase, StacksBase, StartTimeStamp, MpId);
 
-	  // DXE Core should always load and never return
-	  ASSERT(FALSE);
+	// DXE Core should always load and never return
+	ASSERT(FALSE);
 }
-

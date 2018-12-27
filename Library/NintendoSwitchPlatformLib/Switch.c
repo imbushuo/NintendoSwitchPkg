@@ -55,10 +55,10 @@ ArmPlatformInitializeSystemMemory(
 }
 
 STATIC ARM_CORE_INFO mSwitchCoreInfoTable[] = {
-  { 0x0, 0x0, },             // Cluster 0, Core 0
-  { 0x0, 0x1, },             // Cluster 0, Core 1
-  { 0x0, 0x2, },             // Cluster 0, Core 2
-  { 0x0, 0x3, },             // Cluster 0, Core 3
+  { 0x0, 0x100, },             // Cluster 0, Core 0
+  { 0x0, 0x101, },             // Cluster 0, Core 1
+  { 0x0, 0x102, },             // Cluster 0, Core 2
+  { 0x0, 0x103, },             // Cluster 0, Core 3
 };
 
 STATIC
@@ -93,6 +93,6 @@ ArmPlatformGetPlatformPpiList(
 	OUT EFI_PEI_PPI_DESCRIPTOR  **PpiList
 )
 {
-	*PpiListSize = sizeof(mPlatformPpiTable);
-	*PpiList = mPlatformPpiTable;
+	// Don't use it
+	ASSERT(FALSE);
 }

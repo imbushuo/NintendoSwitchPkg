@@ -37,4 +37,5 @@ typedef volatile UINT32 vu32;
 #define readhw(a) MmioRead16((UINTN)(a))
 #define RMWREG32(addr, startbit, width, val) writel((readl(addr) & ~(((1<<(width)) - 1) << (startbit))) | ((val) << (startbit)), addr)
 
+
 #endif

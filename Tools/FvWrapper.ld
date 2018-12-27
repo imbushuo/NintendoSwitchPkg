@@ -2,8 +2,8 @@ ENTRY(_start);
 
 SECTIONS
 {
-    _start = 0x100000000;
-    . = 0x100000000;
+    _start = 0x80110000;
+    . = 0x80110000;
     .data : {
         *(.data)
     }

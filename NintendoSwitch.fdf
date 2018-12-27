@@ -10,6 +10,49 @@ NumBlocks     = 0x700
 gArmTokenSpaceGuid.PcdFvBaseAddress|gArmTokenSpaceGuid.PcdFvSize
 FV = FVMAIN_COMPACT
 
+[FV.FvMain]
+FvNameGuid         = 3c553072-5b43-4150-a40a-8c6684bdf696
+BlockSize          = 0x40
+NumBlocks          = 0         # This FV gets compressed so make it just big enough
+FvAlignment        = 8         # FV alignment and FV attributes setting.
+ERASE_POLARITY     = 1
+MEMORY_MAPPED      = TRUE
+STICKY_WRITE       = TRUE
+LOCK_CAP           = TRUE
+LOCK_STATUS        = TRUE
+WRITE_DISABLED_CAP = TRUE
+WRITE_ENABLED_CAP  = TRUE
+WRITE_STATUS       = TRUE
+WRITE_LOCK_CAP     = TRUE
+WRITE_LOCK_STATUS  = TRUE
+READ_DISABLED_CAP  = TRUE
+READ_ENABLED_CAP   = TRUE
+READ_STATUS        = TRUE
+READ_LOCK_CAP      = TRUE
+READ_LOCK_STATUS   = TRUE
+
+  # Architecture services (PI Stage)
+  INF MdeModulePkg/Core/Dxe/DxeMain.inf
+  INF MdeModulePkg/Universal/PCD/Dxe/Pcd.inf
+  
+  # UEFI Runtime services
+  INF MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
+  INF MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
+  INF MdeModulePkg/Universal/MonotonicCounterRuntimeDxe/MonotonicCounterRuntimeDxe.inf
+  INF EmbeddedPkg/ResetRuntimeDxe/ResetRuntimeDxe.inf
+  INF EmbeddedPkg/MetronomeDxe/MetronomeDxe.inf
+  INF EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf
+  INF MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf
+
+  # Security Stub
+  INF MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
+
+  # ARM CPU
+  INF ArmPkg/Drivers/CpuDxe/CpuDxe.inf
+  INF ArmPkg/Drivers/TimerDxe/TimerDxe.inf
+  INF ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
+  INF MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
+
 [FV.FVMAIN_COMPACT]
 FvAlignment        = 8
 ERASE_POLARITY     = 1
@@ -29,7 +72,11 @@ READ_LOCK_CAP      = TRUE
 READ_LOCK_STATUS   = TRUE
 
   INF NintendoSwitchPkg/PrePi/PeiUniCore.inf
-
+  FILE FV_IMAGE = 9E21FD93-9C72-4c15-8C4B-E77F1DB2D792 {
+    SECTION GUIDED EE4E5898-3914-4259-9D6E-DC7BD79403CF PROCESSING_REQUIRED = TRUE {
+      SECTION FV_IMAGE = FVMAIN
+    }
+  }
 
 ################################################################################
 #

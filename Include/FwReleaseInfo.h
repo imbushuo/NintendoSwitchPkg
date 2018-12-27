@@ -3,9 +3,9 @@
 #ifdef __IMPL_COMMIT_ID__
 #undef __IMPL_COMMIT_ID__
 #endif
-#define __IMPL_COMMIT_ID__ "a413f665"
+#define __IMPL_COMMIT_ID__ "235cee57"
 #ifdef __RELEASE_DATE__
 #undef __RELEASE_DATE__
 #endif
-#define __RELEASE_DATE__ "11/10/2018"
+#define __RELEASE_DATE__ "12/28/2018"
 #endif

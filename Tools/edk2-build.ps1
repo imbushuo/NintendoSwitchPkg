@@ -28,8 +28,8 @@ if ((Test-Path -Path "NintendoSwitchPkg") -eq $null)
 
 # Set environment again.
 Write-Output "[EDK2Build] Set environment."
-$env:PATH="/opt/db-boot-tools:/opt/gcc-linaro-6.4.1-2017.11-x86_64_aarch64-elf/bin:/opt/gcc-linaro-6.4.1-2017.11-x86_64_arm-eabi/bin:$($env:PATH)"
-$env:GCC5_AARCH64_PREFIX="/opt/gcc-linaro-6.4.1-2017.11-x86_64_aarch64-elf/bin/aarch64-elf-"
+$env:PATH="/opt/db-boot-tools:/opt/gcc-linaro-7.2.1-2017.11-x86_64_aarch64-elf/bin:/opt/gcc-linaro-6.4.1-2017.11-x86_64_arm-eabi/bin:$($env:PATH)"
+$env:GCC5_AARCH64_PREFIX="/opt/gcc-linaro-7.2.1-2017.11-x86_64_aarch64-elf/bin/aarch64-elf-"
 
 # Build base tools if not exist (dev).
 if (((Test-Path -Path "BaseTools") -eq $false) -or ($Clean -eq $true))

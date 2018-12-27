@@ -5,10 +5,6 @@
 #include <Library/HobLib.h>
 #include <Library/SerialPortLib.h>
 
-#include <Foundation/Types.h>
-#include <Library/UtilLib.h>
-#include <Library/DisplayInitLib.h>
-
 #include <Resources/font5x12.h>
 #include <Resources/FbColor.h>
 
@@ -17,9 +13,11 @@
 FBCON_POSITION m_Position;
 FBCON_POSITION m_MaxPosition;
 FBCON_COLOR m_Color;
+BOOLEAN m_Initialized = FALSE;
 
 UINTN gWidth = FixedPcdGet32(PcdMipiFrameBufferWidth);
-UINTN gHeight = FixedPcdGet32(PcdMipiFrameBufferHeight);
+// Reserve half screen for output
+UINTN gHeight = FixedPcdGet32(PcdMipiFrameBufferHeight) / 2;
 UINTN gBpp = FixedPcdGet32(PcdMipiFrameBufferPixelBpp);
 
 // Module-used internal routine
@@ -50,8 +48,15 @@ SerialPortInitialize
 	VOID
 )
 {
-	// Lol, nothing to do today
+	// Prevent dup initialization
+	if (m_Initialized) return RETURN_SUCCESS;
+
+	// Reset console
 	FbConReset();
+
+	// Set flag
+	m_Initialized = TRUE;
+
 	return RETURN_SUCCESS;
 }
 
@@ -101,6 +106,8 @@ void FbConPutCharWithFactor
 )
 {
 	char* Pixels;
+
+	if (!m_Initialized) return;
 
 paint:
 
