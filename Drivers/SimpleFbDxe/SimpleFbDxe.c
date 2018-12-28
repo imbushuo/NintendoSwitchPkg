@@ -76,13 +76,6 @@ DISPLAY_DEVICE_PATH mDisplayDevicePath =
     }
 };
 
-typedef struct _CURSED_PIXEL {
-	UINT8 Item1;
-	UINT8 Item2;
-	UINT8 Item3;
-	UINT8 Item4;
-} __attribute__((packed)) CURSED_PIXEL, *PCURSED_PIXEL;
-
 /// Declares
 
 STATIC
@@ -189,10 +182,6 @@ DisplayBlt(
 	UINT8 *VidBuf, *BltBuf, *VidBuf1;
 	UINTN i;
 
-	PCURSED_PIXEL pPixel = NULL;
-#define SWAP(A, B) (A)^=(B); (B)^=(A); (A)^=(B);
-	CURSED_PIXEL Swap;
-
 	switch (BltOperation) {
 	case EfiBltVideoFill:
 		BltBuf = (UINT8 *) mDisplay.Mode->FrameBufferBase;
@@ -219,15 +208,7 @@ DisplayBlt(
 
 			BltBuf = (UINT8 *)((UINTN)BltBuffer + (DestinationY + i) * Delta +
 				DestinationX * FB_BYTES_PER_PIXEL);
-			pPixel = (VOID*) BltBuf;
-			for (UINTN k = 0; k < Width; k++)
-			{
-				SWAP(pPixel->Item1, pPixel->Item3);
-				pPixel++;
-			}
 
-
-			WriteBackInvalidateDataCacheRange((VOID *) BltBuf, FB_BYTES_PER_PIXEL * Width);
 			gBS->CopyMem((VOID *)BltBuf, (VOID *)VidBuf, FB_BYTES_PER_PIXEL * Width);
 		}
 		break;
@@ -242,14 +223,7 @@ DisplayBlt(
 		{
 			VidBuf = POS_TO_FB(DestinationX, DestinationY + i);
 			BltBuf = (UINT8 *)((UINTN)BltBuffer + (SourceY + i) * Delta + SourceX * FB_BYTES_PER_PIXEL);
-			pPixel = (VOID*)BltBuf;
-			for (UINTN k = 0; k < Width; k++)
-			{
-				SWAP(pPixel->Item1, pPixel->Item3);
-				pPixel++;
-			}
 
-			WriteBackInvalidateDataCacheRange((VOID *) BltBuf, FB_BYTES_PER_PIXEL * Width);
 			gBS->CopyMem((VOID *)VidBuf, (VOID *)BltBuf, Width * FB_BYTES_PER_PIXEL);
 		}
 		break;

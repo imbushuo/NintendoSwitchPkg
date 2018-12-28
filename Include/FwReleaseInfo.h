@@ -7,5 +7,5 @@
 #ifdef __RELEASE_DATE__
 #undef __RELEASE_DATE__
 #endif
-#define __RELEASE_DATE__ "12/28/2018"
+#define __RELEASE_DATE__ "12/29/2018"
 #endif
