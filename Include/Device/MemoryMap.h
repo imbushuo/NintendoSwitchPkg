@@ -62,43 +62,13 @@ static ARM_MEMORY_REGION_DESCRIPTOR_EX gDeviceMemoryDescriptorEx[] =
 {
 	/* Address, Length, ResourceType, Resource Attribute, ARM MMU Attribute, HobOption, EFI Memory Type */
 	{
-		// Registers region 0
+		// Registers regions
 		0x00000000,
-		0x50000000,
+		0x80000000,
 		EFI_RESOURCE_MEMORY_MAPPED_IO, 
 		EFI_RESOURCE_ATTRIBUTE_UNCACHEABLE, 
 		ARM_MEMORY_REGION_ATTRIBUTE_DEVICE, 
 		AddDev, 
-		EfiMemoryMappedIO
-	},
-	{
-		// Registers region 1
-		0x50200000,
-		0xfe00000,
-		EFI_RESOURCE_MEMORY_MAPPED_IO,
-		EFI_RESOURCE_ATTRIBUTE_UNCACHEABLE,
-		ARM_MEMORY_REGION_ATTRIBUTE_DEVICE,
-		AddDev,
-		EfiMemoryMappedIO
-	},
-	{
-		// Register region 2
-		0x60200000,
-		0xfe00000,
-		EFI_RESOURCE_MEMORY_MAPPED_IO,
-		EFI_RESOURCE_ATTRIBUTE_UNCACHEABLE,
-		ARM_MEMORY_REGION_ATTRIBUTE_DEVICE,
-		AddDev,
-		EfiMemoryMappedIO
-	},
-	{
-		// Register region 3
-		0x70200000,
-		0xfe00000,
-		EFI_RESOURCE_MEMORY_MAPPED_IO,
-		EFI_RESOURCE_ATTRIBUTE_UNCACHEABLE,
-		ARM_MEMORY_REGION_ATTRIBUTE_DEVICE,
-		AddDev,
 		EfiMemoryMappedIO
 	},
 	{

@@ -15,11 +15,18 @@
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0xc0000000|UINT32|0x0000a400
   # It's actually vertical.
   # Maybe in the future we can workaround this in EL2
-  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|720|UINT32|0x0000a401
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|768|UINT32|0x0000a401
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|1280|UINT32|0x0000a402
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferPixelBpp|32|UINT32|0x0000a403
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferVisibleWidth|720|UINT32|0x0000a405
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferVisibleHeight|1280|UINT32|0x0000a406
+  # SMBIOS
+  gNintendoSwitchPkgTokenSpaceGuid.PcdSmbiosSystemModel|"Nintendo Switch (HAC-001)"|VOID*|0x0000a301
+  gNintendoSwitchPkgTokenSpaceGuid.PcdSmbiosProcessorModel|"NVIDIA Tegra X1"|VOID*|0x0000a302
+  gNintendoSwitchPkgTokenSpaceGuid.PcdSmbiosSystemRetailModel|"HAC-001"|VOID*|0x0000a303
 
   # Carveout information
   gNintendoSwitchPkgTokenSpaceGuid.PcdTrustZoneCarveoutSize|0|UINT64|0x0000a404
+
+[PcdsDynamic]
+  gNintendoSwitchPkgTokenSpaceGuid.PcdDynamicStub|0|UINT64|0x0001a400

@@ -17,7 +17,7 @@ BOOLEAN m_Initialized = FALSE;
 
 UINTN gWidth = FixedPcdGet32(PcdMipiFrameBufferWidth);
 // Reserve half screen for output
-UINTN gHeight = FixedPcdGet32(PcdMipiFrameBufferHeight) / 2;
+UINTN gHeight = FixedPcdGet32(PcdMipiFrameBufferHeight);
 UINTN gBpp = FixedPcdGet32(PcdMipiFrameBufferPixelBpp);
 
 // Module-used internal routine
