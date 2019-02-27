@@ -54,7 +54,7 @@ ArmPlatformInitializeSystemMemory(
 {
 }
 
-STATIC ARM_CORE_INFO mSwitchCoreInfoTable[] = {
+ARM_CORE_INFO mSwitchCoreInfoTable[] = {
   { 0x0, 0x100, },             // Cluster 0, Core 0
   { 0x0, 0x101, },             // Cluster 0, Core 1
   { 0x0, 0x102, },             // Cluster 0, Core 2
@@ -75,15 +75,15 @@ PrePeiCoreGetMpCoreInfo(
 	return EFI_SUCCESS;
 }
 
-STATIC ARM_MP_CORE_INFO_PPI     mMpCoreInfoPpi = {
-  PrePeiCoreGetMpCoreInfo
-};
+// Needs to be declared in the file. Otherwise gArmMpCoreInfoPpiGuid is undefined in the contect of PrePeiCore
+EFI_GUID mArmMpCoreInfoPpiGuid = ARM_MP_CORE_INFO_PPI_GUID;
+ARM_MP_CORE_INFO_PPI mMpCoreInfoPpi = { PrePeiCoreGetMpCoreInfo };
 
-STATIC EFI_PEI_PPI_DESCRIPTOR   mPlatformPpiTable[] = {
+EFI_PEI_PPI_DESCRIPTOR gPlatformPpiTable[] = {
   {
-	EFI_PEI_PPI_DESCRIPTOR_PPI,
-	&gArmMpCoreInfoPpiGuid,
-	&mMpCoreInfoPpi
+    EFI_PEI_PPI_DESCRIPTOR_PPI,
+    &mArmMpCoreInfoPpiGuid,
+    &mMpCoreInfoPpi
   }
 };
 
@@ -93,6 +93,6 @@ ArmPlatformGetPlatformPpiList(
 	OUT EFI_PEI_PPI_DESCRIPTOR  **PpiList
 )
 {
-	// Don't use it
-	ASSERT(FALSE);
+	*PpiListSize = sizeof(gPlatformPpiTable);
+	*PpiList = gPlatformPpiTable;
 }

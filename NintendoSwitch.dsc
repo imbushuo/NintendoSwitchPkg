@@ -292,7 +292,7 @@
 
 [Components.common]
   # PEI/SEC
-  NintendoSwitchPkg/PrePi/PeiUniCore.inf
+  ArmPlatformPkg/PrePi/PeiUniCore.inf
 
   # DXE
   MdeModulePkg/Core/Dxe/DxeMain.inf {
