@@ -1,0 +1,44 @@
+# SidebandButtonDxe.inf: side-band buttons (power, volume) support.
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SidebandButtonDxe
+  FILE_GUID                      = 06c43087-6a2b-4abe-9e95-359363628d29
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = SidebandButtonDxeInitialize
+
+[Sources.common]
+  SidebandButtons.c
+
+[Packages]
+  ArmPkg/ArmPkg.dec
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  NintendoSwitchPkg/NintendoSwitch.dec
+
+[LibraryClasses]
+  BaseLib
+  ReportStatusCodeLib
+  UefiLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  BaseMemoryLib
+  DebugLib
+  CompilerIntrinsicsLib
+  CacheMaintenanceLib
+  PcdLib
+  GpioLib
+  I2cLib
+  Max7762xPmicLib
+  PinmuxLib
+  DevicePathLib
+
+[Protocols]
+  gEfiDriverBindingProtocolGuid
+  gEfiSimpleTextInProtocolGuid
+  gEfiSimpleTextInputExProtocolGuid 
+
+[Depex]
+  TRUE

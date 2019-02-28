@@ -128,6 +128,7 @@
   Max7762xPmicLib|NintendoSwitchPkg/Library/Max7762xPmicLib/Max7762xPmicLib.inf
   PinmuxLib|NintendoSwitchPkg/Library/PinmuxLib/PinmuxLib.inf
   UtilLib|NintendoSwitchPkg/Library/UtilLib/UtilLib.inf
+  ClockLib|NintendoSwitchPkg/Library/ClockLib/ClockLib.inf
 
   # System Libraries
   EfiResetSystemLib|ArmPkg/Library/ArmPsciResetSystemLib/ArmPsciResetSystemLib.inf
@@ -143,7 +144,6 @@
   PrePiHobListPointerLib|ArmPlatformPkg/Library/PrePiHobListPointerLib/PrePiHobListPointerLib.inf
   MemoryAllocationLib|EmbeddedPkg/Library/PrePiMemoryAllocationLib/PrePiMemoryAllocationLib.inf
   MemoryInitPeiLib|NintendoSwitchPkg/Library/MemoryInitPeiLib/MemoryInitPeiLib.inf
-  DisplayInitLib|NintendoSwitchPkg/Library/EarlyDisplayInitLib/EarlyDisplayInitLib.inf
 
 [LibraryClasses.common.DXE_CORE]
   DxeCoreEntryPoint|MdePkg/Library/DxeCoreEntryPoint/DxeCoreEntryPoint.inf
@@ -335,6 +335,10 @@
 
   # SMBIOS
   NintendoSwitchPkg/Drivers/SmBiosTableDxe/SmBiosTableDxe.inf
+
+  # Drivers
+  NintendoSwitchPkg/Drivers/SidebandButtonDxe/SidebandButtonDxe.inf
+  NintendoSwitchPkg/Drivers/ClockManagementDxe/ClockManagementDxe.inf
 
   # BDS
   MdeModulePkg/Universal/PrintDxe/PrintDxe.inf

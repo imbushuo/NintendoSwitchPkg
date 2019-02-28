@@ -82,6 +82,10 @@ READ_LOCK_STATUS   = TRUE
   # SMBIOS
   INF NintendoSwitchPkg/Drivers/SmBiosTableDxe/SmBiosTableDxe.inf
 
+  # Drivers
+  INF NintendoSwitchPkg/Drivers/SidebandButtonDxe/SidebandButtonDxe.inf
+  INF NintendoSwitchPkg/Drivers/ClockManagementDxe/ClockManagementDxe.inf
+
   # Disk IO
   INF MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
   INF MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
