@@ -15,6 +15,10 @@
 #include <Library/ArmLib.h>
 
 ASM_FUNC(ArmPlatformPeiBootAction)
+  // U-Boot or ATF set SPSel as #0, this is cursed
+  // To ensure EL0 stack can be utilized by 
+  // exception handler, set SPSel to 1
+  msr  SPSel, #1
   ret
 
 //UINTN

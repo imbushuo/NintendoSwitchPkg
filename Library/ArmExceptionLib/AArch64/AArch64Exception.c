@@ -38,16 +38,13 @@ RETURN_STATUS ArchVectorConfig(
 {
   UINTN             HcrReg;
   UINT8             *Stack;
-  VOID              *StackTop;
 
   Stack = AllocatePages (EL0_STACK_PAGES);
   if (Stack == NULL) {
     return RETURN_OUT_OF_RESOURCES;
   }
 
-  StackTop = (UINT8 *) Stack + EFI_PAGES_TO_SIZE (EL0_STACK_PAGES);
-  asm("msr sp_el0, %0" : "=r"(StackTop) : "0"(StackTop));
-  // RegisterEl0Stack (StackTop);
+  RegisterEl0Stack ((UINT8 *) Stack + EFI_PAGES_TO_SIZE (EL0_STACK_PAGES));
 
   if (ArmReadCurrentEL() == AARCH64_EL2) {
     HcrReg = ArmReadHcr();
