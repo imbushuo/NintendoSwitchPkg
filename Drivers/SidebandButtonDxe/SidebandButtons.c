@@ -19,11 +19,13 @@
 #include <Library/Max7762xLib.h>
 #include <Library/GpioLib.h>
 #include <Library/PinmuxLib.h>
+#include <Protocol/Pmic.h>
 #include <Device/StaticDevices.h>
 
 #define SBB_POLL_INTERVAL 100000
 
 EFI_EVENT m_CallbackTimer;
+PMIC_PROTOCOL *mPmicProtocol;
 
 VOID
 EFIAPI SidebandButtonsPoll(
@@ -35,9 +37,15 @@ EFIAPI SidebandButtonsPoll(
     {
         DEBUG((EFI_D_ERROR | EFI_D_INFO, "Volume down button pressed \n"));
     }
-    else if (!gpio_read(GPIO_BY_NAME(BUTTON_VOL_UP)))
+    
+    if (!gpio_read(GPIO_BY_NAME(BUTTON_VOL_UP)))
     {
         DEBUG((EFI_D_ERROR | EFI_D_INFO, "Volume up button pressed \n"));
+    }
+
+    if (mPmicProtocol->QueryPowerButton())
+    {
+        DEBUG((EFI_D_ERROR | EFI_D_INFO, "Power button pressed \n"));
     }
 }
 
@@ -51,12 +59,21 @@ SidebandButtonDxeInitialize
 {
     EFI_STATUS Status;
 
+    // Locate PMIC protocol.
+    Status = gBS->LocateProtocol(
+        &gPmicProtocolGuid,
+        NULL,
+        (VOID**) &mPmicProtocol
+    );
+    if (EFI_ERROR(Status)) goto exit;
+
     // Configure volume up/down as inputs.
     gpio_config(GPIO_BY_NAME(BUTTON_VOL_UP), GPIO_MODE_GPIO);
 	gpio_config(GPIO_BY_NAME(BUTTON_VOL_DOWN), GPIO_MODE_GPIO);
 	gpio_output_enable(GPIO_BY_NAME(BUTTON_VOL_UP), GPIO_OUTPUT_DISABLE);
 	gpio_output_enable(GPIO_BY_NAME(BUTTON_VOL_DOWN), GPIO_OUTPUT_DISABLE);
 
+    // Create polling.
     Status = gBS->CreateEvent(
         EVT_NOTIFY_SIGNAL | EVT_TIMER,
         TPL_CALLBACK,
@@ -76,5 +93,6 @@ SidebandButtonDxeInitialize
     if (EFI_ERROR(Status)) goto exit;
 
 exit:
+    ASSERT_EFI_ERROR(Status);
     return Status;
 }
