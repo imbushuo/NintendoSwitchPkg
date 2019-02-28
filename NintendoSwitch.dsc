@@ -257,15 +257,17 @@
 
   # Interrupt Controller (arch/arm64/boot/dts/nvidia/tegra210.dtsi)
   gEmbeddedTokenSpaceGuid.PcdInterruptBaseAddress|0x50041000
+  gArmTokenSpaceGuid.PcdGicDistributorBase|0x50041000
+  gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase|0x50042000
 
   # What the hell is that
   # So Tegra210 has several timer complex?
-  gArmTokenSpaceGuid.PcdArmArchTimerSecIntrNum|13
-  gArmTokenSpaceGuid.PcdArmArchTimerIntrNum|14
-  gArmTokenSpaceGuid.PcdArmArchTimerVirtIntrNum|10
-  gArmTokenSpaceGuid.PcdArmArchTimerHypIntrNum|11
+  gArmTokenSpaceGuid.PcdArmArchTimerSecIntrNum|29
+  gArmTokenSpaceGuid.PcdArmArchTimerIntrNum|30
+  gArmTokenSpaceGuid.PcdArmArchTimerHypIntrNum|26
+  gArmTokenSpaceGuid.PcdArmArchTimerVirtIntrNum|27
 
-  # Core configs (WTF? MPIDR = 4?)
+  # Core configs
   gArmTokenSpaceGuid.PcdArmPrimaryCore|0
   gArmTokenSpaceGuid.PcdArmPrimaryCoreMask|0xf03
   gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz|19200000
