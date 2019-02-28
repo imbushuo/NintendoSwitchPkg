@@ -8,10 +8,12 @@ typedef struct _TEGRA210_CLOCK_MGMT_PROTOCOL TEGRA210_CLOCK_MGMT_PROTOCOL;
 
 typedef EFI_STATUS (EFIAPI *clk_uart_enable_t)(UINT32 DeviceIndex);
 typedef EFI_STATUS (EFIAPI *clk_i2c_enable_t)(UINT32 DeviceIndex);
+typedef EFI_STATUS (EFIAPI *clk_cl_dvfs_enable_t)(VOID);
 
 struct _TEGRA210_CLOCK_MGMT_PROTOCOL {
-    clk_uart_enable_t   EnableUart;
-    clk_i2c_enable_t    EnableI2c;
+    clk_uart_enable_t       EnableUart;
+    clk_i2c_enable_t        EnableI2c;
+    clk_cl_dvfs_enable_t    EnableClDvfs;
 };
 
 extern EFI_GUID gTegra210ClockManagementProtocolGuid;

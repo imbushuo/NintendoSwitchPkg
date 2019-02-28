@@ -459,6 +459,7 @@ void clock_enable(const clock_t *clk);
 void clock_disable(const clock_t *clk);
 
 /*! Device clocks */
+void clock_enable_cl_dvfs();
 void clock_enable_uart(u32 idx);
 void clock_enable_i2c(u32 idx);
 void clock_sdmmc_config_clock_source(u32 *pout, u32 id, u32 val);

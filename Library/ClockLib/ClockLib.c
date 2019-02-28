@@ -312,3 +312,8 @@ void clock_sdmmc_disable(u32 id)
 	_clock_sdmmc_clear_enable(id);
 	_clock_sdmmc_is_reset(id);
 }
+
+void clock_enable_cl_dvfs()
+{
+	clock_enable(&_clock_cl_dvfs);
+}

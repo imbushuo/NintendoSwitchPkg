@@ -339,6 +339,7 @@
   # Drivers
   NintendoSwitchPkg/Drivers/SidebandButtonDxe/SidebandButtonDxe.inf
   NintendoSwitchPkg/Drivers/ClockManagementDxe/ClockManagementDxe.inf
+  NintendoSwitchPkg/Drivers/PmicDxe/PmicDxe.inf
 
   # BDS
   MdeModulePkg/Universal/PrintDxe/PrintDxe.inf

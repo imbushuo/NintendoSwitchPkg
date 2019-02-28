@@ -33,10 +33,31 @@ EnableUart
     IN UINT32 DeviceIndex
 );
 
+STATIC
+EFI_STATUS
+EFIAPI
+EnableClDvfs
+(
+    VOID
+);
+
 STATIC TEGRA210_CLOCK_MGMT_PROTOCOL mClockProto = {
     EnableUart,
     EnableI2c,
+    EnableClDvfs,
 };
+
+STATIC
+EFI_STATUS
+EFIAPI
+EnableClDvfs
+(
+    VOID
+)
+{
+    clock_enable_cl_dvfs();
+    return EFI_SUCCESS;
+}
 
 STATIC
 EFI_STATUS
