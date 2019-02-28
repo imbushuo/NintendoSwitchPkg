@@ -48,8 +48,14 @@ SerialPortInitialize
 	VOID
 )
 {
+	UINTN InterruptState = 0;
+
 	// Prevent dup initialization
 	if (m_Initialized) return RETURN_SUCCESS;
+
+	// Interrupt Disable
+	InterruptState = ArmGetInterruptState();
+	ArmDisableInterrupts();
 
 	// Reset console
 	FbConReset();
@@ -57,6 +63,7 @@ SerialPortInitialize
 	// Set flag
 	m_Initialized = TRUE;
 
+	if (InterruptState) ArmEnableInterrupts();
 	return RETURN_SUCCESS;
 }
 
@@ -351,11 +358,15 @@ SerialPortWrite
 )
 {
 	UINT8* CONST Final = &Buffer[NumberOfBytes];
+	UINTN  InterruptState = ArmGetInterruptState();
+	ArmDisableInterrupts();
+
 	while (Buffer < Final)
 	{
 		FbConPutCharWithFactor(*Buffer++, FBCON_COMMON_MSG, SCALE_FACTOR);
 	}
 
+	if (InterruptState) ArmEnableInterrupts();
 	return NumberOfBytes;
 }
 
@@ -368,7 +379,10 @@ SerialPortWriteCritical
 )
 {
 	UINT8* CONST Final = &Buffer[NumberOfBytes];
-	UINTN CurrentForeground = m_Color.Foreground;
+	UINTN  CurrentForeground = m_Color.Foreground;
+	UINTN  InterruptState = ArmGetInterruptState();
+
+	ArmDisableInterrupts();
 	m_Color.Foreground = FB_BGRA8888_YELLOW;
 
 	while (Buffer < Final)
@@ -378,6 +392,7 @@ SerialPortWriteCritical
 
 	m_Color.Foreground = CurrentForeground;
 
+	if (InterruptState) ArmEnableInterrupts();
 	return NumberOfBytes;
 }
 
