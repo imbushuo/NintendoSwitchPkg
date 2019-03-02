@@ -44,6 +44,8 @@
 [Protocols]
   gTegra210ClockManagementProtocolGuid
   gPmicProtocolGuid
+  gEfiBlockIoProtocolGuid
+  gEfiDevicePathProtocolGuid
 
 [Depex]
   gTegra210ClockManagementProtocolGuid AND

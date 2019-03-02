@@ -40,7 +40,7 @@
 #include <Library/PinmuxLib.h>
 #include <Library/GpioLib.h>
 
-#define DPRINTF(...) DEBUG((EFI_D_INFO, __VA_ARGS__))
+#define DPRINTF(...)
 
 /*! SCMMC controller base addresses. */
 static const UINTN _sdmmc_bases[4] = {
@@ -783,8 +783,8 @@ static int _sdmmc_config_dma(sdmmc_t *sdmmc, u32 *blkcnt_out, sdmmc_req_t *req)
 	if (blkcnt >= 0xFFFF) blkcnt = 0xFFFF;
 	u64 admaaddr = (UINTN) req->buf;
 
-	// Check alignment.
-	if (admaaddr << 29) return 0;
+	// Check alignment. (This for 32-bit, need propre value for 64-bit)
+	// if (admaaddr << 29) return 0;
 
 	sdmmc->regs->admaaddr = admaaddr;
 	sdmmc->dma_addr_next = (admaaddr + 0x80000) & 0xFFF80000;

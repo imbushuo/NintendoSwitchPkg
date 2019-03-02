@@ -37,7 +37,7 @@
 #include "mmc.h"
 #include "sd.h"
 
-#define DPRINTF(...) DEBUG((EFI_D_INFO, __VA_ARGS__))
+#define DPRINTF(...)
 
 static inline u32 unstuff_bits(u32 *resp, u32 start, u32 size)
 {
@@ -185,7 +185,7 @@ static int _sdmmc_storage_readwrite(sdmmc_storage_t *storage, u32 sector, u32 nu
 	while (num_sectors)
 	{
 		u32 blkcnt = 0;
-		//Retry once on error.
+		// Retry once on error.
 		if (!_sdmmc_storage_readwrite_ex(storage, &blkcnt, sector, MIN(num_sectors, 0xFFFF), bbuf, is_write))
 			if (!_sdmmc_storage_readwrite_ex(storage, &blkcnt, sector, MIN(num_sectors, 0xFFFF), bbuf, is_write))
 				return 0;
