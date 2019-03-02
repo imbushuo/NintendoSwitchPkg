@@ -1,15 +1,15 @@
-# PmicDxe.inf: MAX7762x PMIC driver
-
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = PmicDxe
-  FILE_GUID                      = 06c43087-6a2b-4abe-9e95-359363628d31
+  BASE_NAME                      = SdMmcDxe
+  FILE_GUID                      = 5d69e400-e850-4a90-8b9b-e97a8c22237d
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
-  ENTRY_POINT                    = PmicDxeInitialize
+  ENTRY_POINT                    = SdMmcDxeInitialize
 
 [Sources.common]
-  Pmic.c
+  SdMmc.c
+  Library/sdmmc_driver.c
+  Library/sdmmc.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
@@ -29,13 +29,22 @@
   CompilerIntrinsicsLib
   CacheMaintenanceLib
   PcdLib
-  I2cLib
+  TimerLib
+  IoLib
+  EarlyTimerLib
   Max7762xPmicLib
+  PinmuxLib
+  GpioLib
+  I2cLib
   ClockLib
+
+[BuildOptions.AARCH64]
+  GCC:*_*_*_CC_FLAGS = -Wno-unused-function -Wno-unused-variable
 
 [Protocols]
   gTegra210ClockManagementProtocolGuid
   gPmicProtocolGuid
 
 [Depex]
-  gTegra210ClockManagementProtocolGuid
+  gTegra210ClockManagementProtocolGuid AND
+  gPmicProtocolGuid

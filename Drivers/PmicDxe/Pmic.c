@@ -17,6 +17,7 @@
 #include <Library/I2cLib.h>
 #include <Device/Max77620.h>
 #include <Device/Pmc.h>
+#include <Library/ClockLib.h>
 #include <Library/Max7762xLib.h>
 #include <Library/EarlyTimerLib.h>
 #include <Protocol/ClockManagement.h>
@@ -35,8 +36,25 @@ QueryPowerButton
     return (max77620_recv_byte(MAX77620_REG_ONOFFSTAT) & 0x4);
 }
 
+STATIC
+EFIAPI
+EFI_STATUS
+SetRegulatorVoltage
+(
+    UINT32 DeviceId,
+    UINT32 Voltage
+)
+{
+    int ret = 0;
+    ret = max77620_regulator_set_voltage(DeviceId, Voltage);
+
+    if (ret != 1) return EFI_INVALID_PARAMETER;
+    return EFI_SUCCESS;
+}
+
 STATIC PMIC_PROTOCOL mPmicProto = {
     QueryPowerButton,
+    SetRegulatorVoltage,
 };
 
 EFI_STATUS
@@ -93,6 +111,8 @@ PmicDxeInitialize
 
 	// Remove isolation from SDMMC1 and core domain
 	PMC(APBDEV_PMC_NO_IOPOWER) &= ~(1 << 12);
+
+    CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) = (CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) & 0xFFFF8888) | 0x3333;
 
     // Install protocol
     Status = gBS->InstallMultipleProtocolInterfaces(

@@ -7,9 +7,11 @@
 typedef struct _PMIC_PROTOCOL PMIC_PROTOCOL;
 
 typedef BOOLEAN (EFIAPI *power_btn_check_t)(VOID);
+typedef EFI_STATUS (EFIAPI *regulator_set_power_mv_t)(UINT32 DeviceID, UINT32 Voltage);
 
 struct _PMIC_PROTOCOL {
-    power_btn_check_t       QueryPowerButton;
+    power_btn_check_t           QueryPowerButton;
+    regulator_set_power_mv_t    SetRegulatorVoltage;
 };
 
 extern EFI_GUID gPmicProtocolGuid;

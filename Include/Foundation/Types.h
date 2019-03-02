@@ -24,6 +24,7 @@ typedef UINT64 u64;
 typedef volatile UINT8 vu8;
 typedef volatile UINT16 vu16;
 typedef volatile UINT32 vu32;
+typedef volatile UINT64 vu64;
 
 #define memcpy(s1, s2, n) CopyMem((s1), (s2), (n))
 #define memmove(s1, s2, n) CopyMem((s1), (s2), (n))
@@ -35,6 +36,8 @@ typedef volatile UINT32 vu32;
 #define readb(a) MmioRead8((UINTN)(a))
 #define writehw(v, a) MmioWrite16((UINTN)(a), (UINT16)(v))
 #define readhw(a) MmioRead16((UINTN)(a))
+#define writew(v, a) MmioWrite16((UINTN)(a), (UINT16)(v))
+#define readw(a) MmioRead16((UINTN)(a))
 #define RMWREG32(addr, startbit, width, val) writel((readl(addr) & ~(((1<<(width)) - 1) << (startbit))) | ((val) << (startbit)), addr)
 
 

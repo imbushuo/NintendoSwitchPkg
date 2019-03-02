@@ -41,10 +41,60 @@ EnableClDvfs
     VOID
 );
 
+STATIC
+BOOLEAN
+EFIAPI
+SdMmcClockNotResetAndEnabled
+(
+    UINT32 Index
+);
+
+STATIC
+EFI_STATUS
+EFIAPI
+SdMmcClockGetParams
+(
+    UINT32  *pOut,
+    UINT16  *pDivisor,
+    UINT32  Type
+);
+
+STATIC
+EFI_STATUS
+EFIAPI
+SdMmcClockEnable
+(
+    UINT32  Index,
+    UINT32  Clock
+);
+
+STATIC
+EFI_STATUS
+EFIAPI
+SdMmcClockDisable
+(
+    UINT32 Index
+);
+
+STATIC
+EFI_STATUS
+EFIAPI
+SdMmcClockConfigSource
+(
+    UINT32 *pOut,
+    UINT32 DeviceId,
+    UINT32 Value
+);
+
 STATIC TEGRA210_CLOCK_MGMT_PROTOCOL mClockProto = {
     EnableUart,
     EnableI2c,
     EnableClDvfs,
+    SdMmcClockNotResetAndEnabled,
+    SdMmcClockGetParams,
+    SdMmcClockEnable,
+    SdMmcClockConfigSource,
+    SdMmcClockDisable
 };
 
 STATIC
@@ -83,6 +133,70 @@ EnableUart
     if (DeviceIndex < 0 || DeviceIndex > 4) return EFI_INVALID_PARAMETER;
     clock_enable_uart(DeviceIndex);
     return EFI_SUCCESS; 
+}
+
+STATIC
+BOOLEAN
+EFIAPI
+SdMmcClockNotResetAndEnabled
+(
+    UINT32 Index
+)
+{
+    return clock_sdmmc_is_not_reset_and_enabled(Index);
+}
+
+STATIC
+EFI_STATUS
+EFIAPI
+SdMmcClockGetParams
+(
+    UINT32* pOut,
+    UINT16* pDivisor,
+    UINT32  Type
+)
+{
+    clock_sdmmc_get_params(pOut, pDivisor, Type);
+    return EFI_SUCCESS;
+}
+
+STATIC
+EFI_STATUS
+EFIAPI
+SdMmcClockEnable
+(
+    UINT32  Index,
+    UINT32  Clock
+)
+{
+    clock_sdmmc_enable(Index, Clock);
+    return EFI_SUCCESS;
+}
+
+STATIC
+EFI_STATUS
+EFIAPI
+SdMmcClockDisable
+(
+    UINT32 Index
+)
+{
+    clock_sdmmc_disable(Index);
+    return EFI_SUCCESS;
+}
+
+STATIC
+EFI_STATUS
+EFIAPI
+SdMmcClockConfigSource
+(
+    UINT32 *pOut,
+    UINT32 DeviceId,
+    UINT32 Value
+)
+{
+    clock_sdmmc_config_clock_source(pOut, DeviceId, Value);
+    return EFI_SUCCESS;
 }
 
 EFI_STATUS
