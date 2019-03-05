@@ -26,26 +26,21 @@ DefinitionBlock("DsdtTable.aml", "DSDT", 1, "NVIDIA", "NINTENDO", EFI_ACPI_ARM_O
       Return (Arg3)
     }
 
-    Device (CLU0) { // Cluster0 state
-      Name(_HID, "ACPI0010")
+    Device(CPU0) {
+      Name(_HID, "ACPI0007")
+      Name(_UID, 0)
+    }
+    Device(CPU1) {
+      Name(_HID, "ACPI0007")
       Name(_UID, 1)
-
-      Device(CPU0) { // A57-0: Cluster 0, Cpu 0
-        Name(_HID, "ACPI0007")
-        Name(_UID, 0)
-      }
-      Device(CPU1) { // A57-0: Cluster 0, Cpu 1
-        Name(_HID, "ACPI0007")
-        Name(_UID, 0)
-      }
-      Device(CPU2) { // A57-0: Cluster 0, Cpu 2
-        Name(_HID, "ACPI0007")
-        Name(_UID, 0)
-      }
-      Device(CPU3) { // A57-0: Cluster 0, Cpu 3
-        Name(_HID, "ACPI0007")
-        Name(_UID, 0)
-      }
+    }
+    Device(CPU2) {
+      Name(_HID, "ACPI0007")
+      Name(_UID, 2)
+    }
+    Device(CPU3) {
+      Name(_HID, "ACPI0007")
+      Name(_UID, 3)
     }
   } // Scope(_SB)
 }
