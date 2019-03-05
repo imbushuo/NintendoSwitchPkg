@@ -22,5 +22,8 @@
 
 u32 get_tmr();
 void sleep(u32 ticks);
+u32 get_tmr_s();
+u32 get_tmr_ms();
+u32 get_tmr_us();
 
 #endif

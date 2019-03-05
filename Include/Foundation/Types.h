@@ -17,6 +17,10 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
 
+typedef INT8 s8;
+typedef INT16 s16;
+typedef INT32 s32;
+typedef INT64 s64;
 typedef UINT8 u8;
 typedef UINT16 u16;
 typedef UINT32 u32;
@@ -25,6 +29,7 @@ typedef volatile UINT8 vu8;
 typedef volatile UINT16 vu16;
 typedef volatile UINT32 vu32;
 typedef volatile UINT64 vu64;
+typedef unsigned int uint;
 
 #define memcpy(s1, s2, n) CopyMem((s1), (s2), (n))
 #define memmove(s1, s2, n) CopyMem((s1), (s2), (n))
@@ -40,5 +45,16 @@ typedef volatile UINT64 vu64;
 #define readw(a) MmioRead16((UINTN)(a))
 #define RMWREG32(addr, startbit, width, val) writel((readl(addr) & ~(((1<<(width)) - 1) << (startbit))) | ((val) << (startbit)), addr)
 
+#define do_div(n,base) ({					\
+	UINT32 __base = (base);				\
+	UINT32 __rem;						\
+	__rem = ((UINT64)(n)) % __base;			\
+	(n) = ((UINT64)(n)) / __base;				\
+	__rem;							\
+ })
+
+#ifndef BIT
+#define BIT(nr)			(1UL << (nr))
+#endif
 
 #endif

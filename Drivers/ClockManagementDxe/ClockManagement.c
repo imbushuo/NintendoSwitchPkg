@@ -16,6 +16,8 @@
 #include <Device/T210.h>
 #include <Library/ClockLib.h>
 #include <Protocol/ClockManagement.h>
+#include <Protocol/UBootClockManagement.h>
+#include "Include/UBootClkImpl.h"
 
 STATIC
 EFI_STATUS
@@ -95,6 +97,13 @@ STATIC TEGRA210_CLOCK_MGMT_PROTOCOL mClockProto = {
     SdMmcClockEnable,
     SdMmcClockConfigSource,
     SdMmcClockDisable
+};
+
+TEGRA210_UBOOT_CLOCK_MANAGEMENT_PROTOCOL mUbootClockProto = {
+    UbClkGetRate,
+    UbClkSetRate,
+    UbEnableClk,
+    UbDisableClk
 };
 
 STATIC
@@ -214,6 +223,8 @@ ClockManagementDxeInitialize
         &ProtoHandle,
         &gTegra210ClockManagementProtocolGuid,
         &mClockProto,
+        &gTegraUBootClockManagementProtocolGuid,
+        &mUbootClockProto,
         NULL
     );
 

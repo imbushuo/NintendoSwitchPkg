@@ -92,9 +92,9 @@ static ARM_MEMORY_REGION_DESCRIPTOR_EX gDeviceMemoryDescriptorEx[] =
 		EfiBootServicesCode
 	},
 	{
-		// UEFI Memory / HLOS Memory 2
+		// HLOS memory 2
 		0x801f0000,
-		0x7dd00000,
+		0x5f990000,
 		EFI_RESOURCE_SYSTEM_MEMORY,
 		SYSTEM_MEMORY_RESOURCE_ATTR_CAPABILITIES,
 		ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK,
@@ -102,45 +102,16 @@ static ARM_MEMORY_REGION_DESCRIPTOR_EX gDeviceMemoryDescriptorEx[] =
 		EfiConventionalMemory
 	},
 	{
-		// UEFI stack + Reset vector
-		0x87fc0000,
-		0x40000,
-		EFI_RESOURCE_SYSTEM_MEMORY,
-		SYSTEM_MEMORY_RESOURCE_ATTR_CAPABILITIES,
-		ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK,
-		AddMem,
-		EfiBootServicesData
-	},
-	{
-		// HLOS Memory 3
-		0x88000000,
-		0x38000000,
-		EFI_RESOURCE_SYSTEM_MEMORY,
-		SYSTEM_MEMORY_RESOURCE_ATTR_CAPABILITIES,
-		ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK,
-		AddMem,
-		EfiConventionalMemory
-	},
-	{
-		// Graphics FrameBuffer
-		0xc0000000,
-		0x00480000,
+		// Display Reserved
+		0xdfb80000,
+		0x480000,
 		EFI_RESOURCE_MEMORY_RESERVED, 
 		EFI_RESOURCE_ATTRIBUTE_WRITE_THROUGH_CACHEABLE, 
 		ARM_MEMORY_REGION_ATTRIBUTE_WRITE_THROUGH, 
 		AddMem, 
 		EfiMaxMemoryType
 	},
-	{
-		// HLOS memory 3
-		0xc0480000,
-		0x3fb80000,
-		EFI_RESOURCE_SYSTEM_MEMORY,
-		SYSTEM_MEMORY_RESOURCE_ATTR_CAPABILITIES,
-		ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK,
-		AddMem,
-		EfiConventionalMemory
-	},
+	// Carveout
 	{
 		// HLOS memory 4 (they told me this, but actually not)
 		0x100000000,
@@ -152,7 +123,7 @@ static ARM_MEMORY_REGION_DESCRIPTOR_EX gDeviceMemoryDescriptorEx[] =
 		EfiConventionalMemory
 	},
 	/* Terminator */
-	{ }
+	{ 0 }
 };
 
 #endif

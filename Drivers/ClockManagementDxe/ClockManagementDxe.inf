@@ -9,7 +9,10 @@
   ENTRY_POINT                    = ClockManagementDxeInitialize
 
 [Sources.common]
+  clock.c
+  Tegra210/clock.c
   ClockManagement.c
+  UBootClockManagement.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
@@ -31,8 +34,12 @@
   PcdLib
   ClockLib
 
+[BuildOptions.AARCH64]
+  GCC:*_*_*_CC_FLAGS = -Wno-unused-function -Wno-unused-variable
+
 [Protocols]
-  gTegra210ClockManagementProtocolGuid
+  gTegra210ClockManagementProtocolGuid # Legacy code, BPMP ported
+  gTegraUBootClockManagementProtocolGuid # New code, UBoot AArch64 ported
 
 [Depex]
   TRUE

@@ -25,6 +25,7 @@
 #define SOR1_BASE 0x54580000
 #define PG_UP_BASE 0x60000000
 #define TMR_BASE 0x60005000
+#define RTC_BASE 0x7000E000
 #define CLOCK_BASE 0x60006000
 #define FLOW_CTLR_BASE 0x60007000
 #define SYSREG_BASE 0x6000C000
@@ -86,6 +87,7 @@
 #define EMC(off) _REG(EMC_BASE, off)
 #define MIPI_CAL(off) _REG(MIPI_CAL_BASE, off)
 #define I2S(off) _REG(I2S_BASE, off)
+#define RTC(off) _REG(RTC_BASE, off)
 
 /*! System registers. */
 #define AHB_ARBITRATION_XBAR_CTRL 0xE0
@@ -107,6 +109,12 @@
 /* System Timer */
 #define TMR_US_OFFS     0x10
 #define TMR_US_CFG_OFFS 0x14
+#define TIMERUS_CNTR_1US (0x10 + 0x0)
+
+/*! RTC registers. */
+#define APBDEV_RTC_SECONDS        0x8
+#define APBDEV_RTC_SHADOW_SECONDS 0xC
+#define APBDEV_RTC_MILLI_SECONDS 0x10
 
 /* Memory controller */
 #define NV_PA_MC_BASE		0x70019000	/* Mem Ctlr regs (MCB, etc.) */

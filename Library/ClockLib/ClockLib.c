@@ -30,7 +30,7 @@
 
 static u32 _clock_sdmmc_table[8] = { 0 };
 
-void clock_enable(const clock_t *clk)
+void legacy_clock_enable(const clock_t *clk)
 {
 	//Put clock into reset.
 	CLOCK(clk->reset) = (CLOCK(clk->reset) & ~(1 << clk->index)) | (1 << clk->index);
@@ -45,7 +45,7 @@ void clock_enable(const clock_t *clk)
 	CLOCK(clk->reset) &= ~(1 << clk->index);
 }
 
-void clock_disable(const clock_t *clk)
+void legacy_clock_disable(const clock_t *clk)
 {
 	//Put clock into reset.
 	CLOCK(clk->reset) = (CLOCK(clk->reset) & ~(1 << clk->index)) | (1 << clk->index);
@@ -56,12 +56,12 @@ void clock_disable(const clock_t *clk)
 /*! Clock control for specific hardware portions. */
 void clock_enable_uart(u32 idx)
 {
-	clock_enable(&_clock_uart[idx]);
+	legacy_clock_enable(&_clock_uart[idx]);
 }
 
 void clock_enable_i2c(u32 idx)
 {
-	clock_enable(&_clock_i2c[idx]);
+	legacy_clock_enable(&_clock_i2c[idx]);
 }
 
 static int _clock_sdmmc_config_clock_source_inner(u32 *pout, u32 id, u32 val)
@@ -315,5 +315,5 @@ void clock_sdmmc_disable(u32 id)
 
 void clock_enable_cl_dvfs()
 {
-	clock_enable(&_clock_cl_dvfs);
+	legacy_clock_enable(&_clock_cl_dvfs);
 }

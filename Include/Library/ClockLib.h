@@ -455,8 +455,8 @@ typedef struct _clock_t
 } clock_t;
 
 /*! Generic clock enable/disable. */
-void clock_enable(const clock_t *clk);
-void clock_disable(const clock_t *clk);
+void legacy_clock_enable(const clock_t *clk);
+void legacy_clock_disable(const clock_t *clk);
 
 /*! Device clocks */
 void clock_enable_cl_dvfs();
