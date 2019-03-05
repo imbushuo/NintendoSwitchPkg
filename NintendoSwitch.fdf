@@ -92,7 +92,7 @@ READ_LOCK_STATUS   = TRUE
   INF NintendoSwitchPkg/Drivers/SidebandButtonDxe/SidebandButtonDxe.inf
   INF NintendoSwitchPkg/Drivers/ClockManagementDxe/ClockManagementDxe.inf
   INF NintendoSwitchPkg/Drivers/PmicDxe/PmicDxe.inf
-  INF NintendoSwitchPkg/Drivers/SdMmcDxe/SdMmcDxe.inf
+  # INF NintendoSwitchPkg/Drivers/SdMmcDxe/SdMmcDxe.inf
 
   # Disk IO
   INF MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
@@ -102,21 +102,13 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Bus/Scsi/ScsiDiskDxe/ScsiDiskDxe.inf
   INF FatPkg/EnhancedFatDxe/Fat.inf
 
-  # Networking
-  INF MdeModulePkg/Universal/Network/DpcDxe/DpcDxe.inf
-  INF MdeModulePkg/Universal/Network/ArpDxe/ArpDxe.inf
-  INF MdeModulePkg/Universal/Network/Dhcp4Dxe/Dhcp4Dxe.inf
-  INF MdeModulePkg/Universal/Network/Ip4Dxe/Ip4Dxe.inf
-  INF MdeModulePkg/Universal/Network/MnpDxe/MnpDxe.inf
-  INF MdeModulePkg/Universal/Network/VlanConfigDxe/VlanConfigDxe.inf
-  INF MdeModulePkg/Universal/Network/Mtftp4Dxe/Mtftp4Dxe.inf
-  INF MdeModulePkg/Universal/Network/Tcp4Dxe/Tcp4Dxe.inf
-  INF MdeModulePkg/Universal/Network/Udp4Dxe/Udp4Dxe.inf
-  INF MdeModulePkg/Universal/Network/UefiPxeBcDxe/UefiPxeBcDxe.inf
-  INF MdeModulePkg/Universal/Network/IScsiDxe/IScsiDxe.inf
-
   # Shell
   INF ShellPkg/Application/Shell/Shell.inf
+
+  # Linux (pretends to be UEFI shell)
+  # FILE APPLICATION = 7C04A583-9E3E-4f1c-AD65-E05268D0B4D1 {
+  #   SECTION PE32 = NintendoSwitchPkg/Tools/grubaa64.efi
+  # }
 
 [FV.FVMAIN_COMPACT]
 FvAlignment        = 8
