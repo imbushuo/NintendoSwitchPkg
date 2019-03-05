@@ -10,12 +10,16 @@ typedef UINT64 (EFIAPI *clk_get_rate_t)(UINT64 ClkId);
 typedef UINT64 (EFIAPI *clk_set_rate_t)(UINT64 ClkId, UINT64 Rate);
 typedef void (EFIAPI *clk_enable_t)(UINT64 ClkId);
 typedef void (EFIAPI *clk_disable_t)(UINT64 ClkId);
+typedef void (EFIAPI *rst_assert_t)(UINT64 RstPId);
+typedef void (EFIAPI *rst_deassert_t)(UINT64 RstPId);
 
 struct _TEGRA210_UBOOT_CLOCK_MANAGEMENT_PROTOCOL {
     clk_get_rate_t GetRate;
     clk_set_rate_t SetRate;
     clk_enable_t EnableClk;
     clk_disable_t DisableClk;
+    rst_assert_t AssertRst;
+    rst_deassert_t DeassertRst;
 };
 
 extern EFI_GUID gTegraUBootClockManagementProtocolGuid;

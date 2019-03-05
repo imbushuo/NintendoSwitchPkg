@@ -103,7 +103,9 @@ TEGRA210_UBOOT_CLOCK_MANAGEMENT_PROTOCOL mUbootClockProto = {
     UbClkGetRate,
     UbClkSetRate,
     UbEnableClk,
-    UbDisableClk
+    UbDisableClk,
+    UbResetAssert,
+    UbResetDeassert
 };
 
 STATIC

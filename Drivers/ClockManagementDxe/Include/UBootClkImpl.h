@@ -30,4 +30,18 @@ UbClkSetRate
     IN UINT64 Rate
 );
 
+VOID
+EFIAPI
+UbResetAssert
+(
+    IN UINT64 RstPId
+);
+
+VOID
+EFIAPI
+UbResetDeassert
+(
+    IN UINT64 RstPId
+);
+
 #endif

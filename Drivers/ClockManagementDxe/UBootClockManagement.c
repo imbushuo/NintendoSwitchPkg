@@ -62,3 +62,22 @@ UbClkSetRate
 	return clock_adjust_periph_pll_div(ClkId, parent, Rate, NULL);
 }
 
+VOID
+EFIAPI
+UbResetAssert
+(
+    IN UINT64 RstPId
+)
+{
+    return reset_set_enable(RstPId, 1);
+}
+
+VOID
+EFIAPI
+UbResetDeassert
+(
+    IN UINT64 RstPId
+)
+{
+    return reset_set_enable(RstPId, 0);
+}
