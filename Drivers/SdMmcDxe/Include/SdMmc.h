@@ -138,4 +138,54 @@ struct tegra_mmc_priv {
 	unsigned int clock;	    /* Current clock (MHz) */
 };
 
+static void tegra_mmc_set_power(
+    struct tegra_mmc_priv *priv,
+    unsigned short power
+);
+
+static void tegra_mmc_prepare_data(
+    struct tegra_mmc_priv *priv,
+    struct mmc_data *data,
+    struct bounce_buffer *bbstate
+);
+
+static void tegra_mmc_set_transfer_mode(
+    struct tegra_mmc_priv *priv,
+    struct mmc_data *data
+);
+
+static int tegra_mmc_wait_inhibit(
+    struct tegra_mmc_priv *priv,
+    struct mmc_cmd *cmd,
+    struct mmc_data *data,
+    unsigned int timeout
+);
+
+static int tegra_mmc_send_cmd_bounced(
+    struct tegra_mmc_priv *priv, 
+    struct mmc_cmd *cmd,
+    struct mmc_data *data,
+    struct bounce_buffer *bbstate
+);
+
+static int tegra_mmc_send_cmd(
+    struct tegra_mmc_priv *priv, 
+    struct mmc_cmd *cmd,
+    struct mmc_data *data
+);
+
+static void tegra_mmc_pad_init(
+	struct tegra_mmc_priv *priv
+);
+
+static void tegra_mmc_change_clock(
+	struct tegra_mmc_priv *priv, 
+	uint clock
+);
+
+static int tegra_mmc_set_ios(
+    uint bus_width, 
+    uint clock
+);
+
 #endif

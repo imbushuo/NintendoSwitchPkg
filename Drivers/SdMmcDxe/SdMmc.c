@@ -105,7 +105,8 @@ static void tegra_mmc_prepare_data(
 
 static void tegra_mmc_set_transfer_mode(
     struct tegra_mmc_priv *priv,
-    struct mmc_data *data)
+    struct mmc_data *data
+)
 {
 	unsigned short mode;
 	debug(" mmc_set_transfer_mode called\n");
@@ -135,7 +136,8 @@ static int tegra_mmc_wait_inhibit(
     struct tegra_mmc_priv *priv,
     struct mmc_cmd *cmd,
     struct mmc_data *data,
-    unsigned int timeout)
+    unsigned int timeout
+)
 {
 	/*
 	 * PRNSTS
@@ -430,7 +432,10 @@ out:
 	priv->clock = clock;
 }
 
-static int tegra_mmc_set_ios(uint bus_width, uint clock)
+static int tegra_mmc_set_ios(
+    uint bus_width, 
+    uint clock
+)
 {
 	struct tegra_mmc_priv *priv = &mPriv;
 	unsigned char ctrl;
