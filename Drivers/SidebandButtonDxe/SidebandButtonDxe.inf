@@ -32,7 +32,6 @@
   GpioLib
   I2cLib
   Max7762xPmicLib
-  PinmuxLib
   DevicePathLib
 
 [Protocols]

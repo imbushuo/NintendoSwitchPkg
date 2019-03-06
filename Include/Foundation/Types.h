@@ -33,6 +33,11 @@ typedef unsigned int uint;
 typedef unsigned short ushort;
 typedef unsigned long ulong;
 typedef UINTN size_t;
+typedef EFI_PHYSICAL_ADDRESS uintptr_t;
+typedef BOOLEAN bool;
+
+#define true TRUE
+#define false FALSE
 
 #define memcpy(s1, s2, n) CopyMem((s1), (s2), (n))
 #define memmove(s1, s2, n) CopyMem((s1), (s2), (n))

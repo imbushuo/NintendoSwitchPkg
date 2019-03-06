@@ -37,6 +37,7 @@
 
 #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
 
+#define ROUND(a,b)		(((a) + (b) - 1) & ~((b) - 1))
 #define ALIGN(x,a)		__ALIGN_MASK((x),(typeof(x))(a)-1)
 #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
 #define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))

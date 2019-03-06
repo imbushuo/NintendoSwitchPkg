@@ -16,17 +16,6 @@
 #ifndef __SOC_NVIDIA_TEGRA210_PINMUX_H__
 #define __SOC_NVIDIA_TEGRA210_PINMUX_H__
 
-
-void pinmux_set_config(int pin_index, UINT32 config);
-UINT32 pinmux_get_config(int pin_index);
-
-void pinmux_set_unused(int pin_index, int gpio_index, int has_gpio, int pulltype);
-#define PINMUX_SET_UNUSED_BY_NAME(name) pinmux_set_unused(PINMUX_##name##_INDEX, PAD_TO_GPIO_##name, PAD_HAS_GPIO_##name, PAD_POR_PU_##name)
-#define PINMUX_SET_UNUSED_BY_GPIO(gpio) pinmux_set_unused(PINMUX_GPIO_##gpio, GPIO_##gpio##_index, 1, GPIO_POR_PU_##gpio)
-
-void pinmux_config_i2c(int i2c_index);
-void pinmux_config_uart(int uart_index);
-
 enum {
 	PINMUX_FUNC_MASK = 3 << 0,
 

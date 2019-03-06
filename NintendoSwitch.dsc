@@ -126,7 +126,6 @@
   EarlyTimerLib|NintendoSwitchPkg/Library/EarlyTimerLib/EarlyTimerLib.inf
   SerialPortLib|NintendoSwitchPkg/Library/FrameBufferSerialPortLib/FrameBufferSerialPortLib.inf
   Max7762xPmicLib|NintendoSwitchPkg/Library/Max7762xPmicLib/Max7762xPmicLib.inf
-  PinmuxLib|NintendoSwitchPkg/Library/PinmuxLib/PinmuxLib.inf
   UtilLib|NintendoSwitchPkg/Library/UtilLib/UtilLib.inf
   ClockLib|NintendoSwitchPkg/Library/ClockLib/ClockLib.inf
 
@@ -357,6 +356,7 @@
   NintendoSwitchPkg/Drivers/ClockManagementDxe/ClockManagementDxe.inf
   NintendoSwitchPkg/Drivers/PmicDxe/PmicDxe.inf
   NintendoSwitchPkg/Drivers/SdMmcDxe/SdMmcDxe.inf
+  NintendoSwitchPkg/Drivers/PinMuxDxe/PinMuxDxe.inf
 
   # BDS
   MdeModulePkg/Universal/PrintDxe/PrintDxe.inf

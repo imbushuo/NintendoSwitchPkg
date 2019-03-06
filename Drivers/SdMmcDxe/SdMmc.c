@@ -23,7 +23,6 @@
 #include <Foundation/Types.h>
 #include <Device/T210.h>
 #include <Device/Pmc.h>
-#include <Library/PinmuxLib.h>
 #include <Library/GpioLib.h>
 #include <Protocol/Pmic.h>
 #include <Shim/DebugLib.h>
@@ -33,13 +32,14 @@
 #include <Library/Utc/BounceBuf.h>
 
 #include "Include/SdMmc.h"
+#include "Include/HostOp.h"
 
 TEGRA210_UBOOT_CLOCK_MANAGEMENT_PROTOCOL* mClkProtocol;
 PMIC_PROTOCOL* mPmicProtocol;
 MMC_CONFIG mConfig;
 TEGRA_MMC_PRIV mPriv;
 
-static void tegra_mmc_set_power(
+void tegra_mmc_set_power(
     struct tegra_mmc_priv *priv,
     unsigned short power)
 {
@@ -72,7 +72,7 @@ static void tegra_mmc_set_power(
 	writeb(pwr, &priv->reg->pwrcon);
 }
 
-static void tegra_mmc_prepare_data(
+void tegra_mmc_prepare_data(
     struct tegra_mmc_priv *priv,
     struct mmc_data *data,
     struct bounce_buffer *bbstate
@@ -103,7 +103,7 @@ static void tegra_mmc_prepare_data(
 	writew(data->blocks, &priv->reg->blkcnt);
 }
 
-static void tegra_mmc_set_transfer_mode(
+void tegra_mmc_set_transfer_mode(
     struct tegra_mmc_priv *priv,
     struct mmc_data *data
 )
@@ -132,7 +132,7 @@ static void tegra_mmc_set_transfer_mode(
 	writew(mode, &priv->reg->trnmod);
 }
 
-static int tegra_mmc_wait_inhibit(
+int tegra_mmc_wait_inhibit(
     struct tegra_mmc_priv *priv,
     struct mmc_cmd *cmd,
     struct mmc_data *data,
@@ -165,7 +165,7 @@ static int tegra_mmc_wait_inhibit(
 	return 0;
 }
 
-static int tegra_mmc_send_cmd_bounced(
+int tegra_mmc_send_cmd_bounced(
     struct tegra_mmc_priv *priv, 
     struct mmc_cmd *cmd,
     struct mmc_data *data,
@@ -193,7 +193,10 @@ static int tegra_mmc_send_cmd_bounced(
 		tegra_mmc_set_transfer_mode(priv, data);
 
 	if ((cmd->resp_type & MMC_RSP_136) && (cmd->resp_type & MMC_RSP_BUSY))
+	{
+		debug("MMC_RSP_136 or MMC_RSP_BUSY cannot coexist \n");
 		return -1;
+	}
 
 	/*
 	 * CMDREG
@@ -245,12 +248,12 @@ static int tegra_mmc_send_cmd_bounced(
 
 	if (mask & TEGRA_MMC_NORINTSTS_CMD_TIMEOUT) {
 		/* Timeout Error */
-		debug("timeout: %08x cmd %d\n", mask, cmd->cmdidx);
+		debug("timeout: %08x cmd %d \n", mask, cmd->cmdidx);
 		writel(mask, &priv->reg->norintsts);
 		return -ETIMEDOUT;
 	} else if (mask & TEGRA_MMC_NORINTSTS_ERR_INTERRUPT) {
 		/* Error Interrupt */
-		debug("error: %08x cmd %d\n", mask, cmd->cmdidx);
+		debug("error: %08x cmd %d \n", mask, cmd->cmdidx);
 		writel(mask, &priv->reg->norintsts);
 		return -1;
 	}
@@ -340,7 +343,7 @@ static int tegra_mmc_send_cmd_bounced(
 	return 0;
 }
 
-static int tegra_mmc_send_cmd(
+int tegra_mmc_send_cmd(
     struct tegra_mmc_priv *priv, 
     struct mmc_cmd *cmd,
     struct mmc_data *data
@@ -373,13 +376,13 @@ static int tegra_mmc_send_cmd(
 	return ret;
 }
 
-static void tegra_mmc_pad_init(struct tegra_mmc_priv *priv)
+void tegra_mmc_pad_init(struct tegra_mmc_priv *priv)
 {
     // Nothing to do for Tegra 210
     return;
 }
 
-static void tegra_mmc_change_clock(struct tegra_mmc_priv *priv, uint clock)
+void tegra_mmc_change_clock(struct tegra_mmc_priv *priv, uint clock)
 {
 	ulong rate;
 	int div;
@@ -432,7 +435,7 @@ out:
 	priv->clock = clock;
 }
 
-static int tegra_mmc_set_ios(
+int tegra_mmc_set_ios(
     uint bus_width, 
     uint clock
 )
@@ -574,12 +577,12 @@ SdControllerProbe
     
     // Power on controller
     APB_MISC(APB_MISC_GP_SDMMC1_CLK_LPBK_CONTROL) = 1;
-	PINMUX_AUX(PINMUX_AUX_SDMMC1_CLK)  = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED;
-	PINMUX_AUX(PINMUX_AUX_SDMMC1_CMD)  = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
-	PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT3) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
-	PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT2) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
-	PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT1) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
-	PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT0) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
+	// PINMUX_AUX(PINMUX_AUX_SDMMC1_CLK)  = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED;
+	// PINMUX_AUX(PINMUX_AUX_SDMMC1_CMD)  = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
+	// PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT3) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
+	// PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT2) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
+	// PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT1) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
+	// PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT0) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
 
     // Make sure the SDMMC1 controller is powered.
 	PMC(APBDEV_PMC_NO_IOPOWER) &= ~(1 << 12);
@@ -593,7 +596,7 @@ SdControllerProbe
     gBS->Stall(1000);
 
     // For good measure.
-	APB_MISC(APB_MISC_GP_SDMMC1_PAD_CFGPADCTRL) = 0x10000000;
+	// APB_MISC(APB_MISC_GP_SDMMC1_PAD_CFGPADCTRL) = 0x10000000;
 
     // Set configuration
     mConfig.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
@@ -636,11 +639,11 @@ SdControllerProbe
     // Also get GPIOs, initialize MUX
     // cd-gpios = <&gpio TEGRA_GPIO(Z, 1) GPIO_ACTIVE_LOW>;
     // GPIO control, pull up.
-    PINMUX_AUX(PINMUX_AUX_GPIO_PZ1) = PINMUX_INPUT_ENABLE | PINMUX_PULL_UP | 1;
-	APB_MISC(APB_MISC_GP_VGPIO_GPIO_MUX_SEL) = 0;
-	gpio_config(GPIO_PORT_Z, GPIO_PIN_1, GPIO_MODE_GPIO);
-	gpio_output_enable(GPIO_PORT_Z, GPIO_PIN_1, GPIO_OUTPUT_DISABLE);
-    gBS->Stall(100);
+    // PINMUX_AUX(PINMUX_AUX_GPIO_PZ1) = PINMUX_INPUT_ENABLE | PINMUX_PULL_UP | 1;
+	// APB_MISC(APB_MISC_GP_VGPIO_GPIO_MUX_SEL) = 0;
+	// gpio_config(GPIO_PORT_Z, GPIO_PIN_1, GPIO_MODE_GPIO);
+	// gpio_output_enable(GPIO_PORT_Z, GPIO_PIN_1, GPIO_OUTPUT_DISABLE);
+    // gBS->Stall(100);
 
     // Detect card
     if(!!gpio_read(GPIO_PORT_Z, GPIO_PIN_1))
@@ -651,11 +654,11 @@ SdControllerProbe
 
     // power-gpios = <&gpio TEGRA_GPIO(E, 4) GPIO_ACTIVE_HIGH>;
     // GPIO control, pull down.
-    PINMUX_AUX(PINMUX_AUX_DMIC3_CLK) = PINMUX_INPUT_ENABLE | PINMUX_PULL_DOWN | 1;
-	gpio_config(GPIO_PORT_E, GPIO_PIN_4, GPIO_MODE_GPIO);
-	gpio_write(GPIO_PORT_E, GPIO_PIN_4, GPIO_HIGH);
-	gpio_output_enable(GPIO_PORT_E, GPIO_PIN_4, GPIO_OUTPUT_ENABLE);
-    gBS->Stall(1000);
+    // PINMUX_AUX(PINMUX_AUX_DMIC3_CLK) = PINMUX_INPUT_ENABLE | PINMUX_PULL_DOWN | 1;
+	// gpio_config(GPIO_PORT_E, GPIO_PIN_4, GPIO_MODE_GPIO);
+	// gpio_write(GPIO_PORT_E, GPIO_PIN_4, GPIO_HIGH);
+	// gpio_output_enable(GPIO_PORT_E, GPIO_PIN_4, GPIO_OUTPUT_ENABLE);
+    // gBS->Stall(1000);
 
     return EFI_SUCCESS;
 }
@@ -688,6 +691,12 @@ SdMmcDxeInitialize
 
     Status = SdControllerProbe();
     if (EFI_ERROR(Status)) goto exit;
+
+	Status = TegraMmcInit();
+	if (EFI_ERROR(Status)) goto exit;
+
+	// Check some commands
+	SdFxStart();
 
 exit:
     ASSERT_EFI_ERROR(Status);

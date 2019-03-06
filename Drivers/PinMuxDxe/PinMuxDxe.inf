@@ -1,18 +1,20 @@
-# ClockManagementDxe.inf: DXE-wide clock management.
+# PinMux.inf: DXE-wide PINMUX management.
 
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = ClockManagementDxe
-  FILE_GUID                      = 06c43087-6a2b-4abe-9e95-359363628d30
+  BASE_NAME                      = PinMux
+  FILE_GUID                      = 06c43087-6a2b-4abe-9e95-359363628d39
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
-  ENTRY_POINT                    = ClockManagementDxeInitialize
+  ENTRY_POINT                    = PinMuxDxeInitialize
 
 [Sources.common]
-  clock.c
-  Tegra210/clock.c
-  ClockManagement.c
-  UBootClockManagement.c
+  # PINMUX
+  PinMux.c
+  Tegra210/pinmux.c
+  pinmux-common.c
+  # GPIO
+  Gpio.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
@@ -33,14 +35,13 @@
   CacheMaintenanceLib
   PcdLib
   ClockLib
+  GpioLib
 
 [BuildOptions.AARCH64]
   GCC:*_*_*_CC_FLAGS = -Wno-unused-function -Wno-unused-variable
 
 [Protocols]
-  gTegra210ClockManagementProtocolGuid # Legacy code, BPMP ported
-  gTegraUBootClockManagementProtocolGuid # New code, UBoot AArch64 ported
   gTegraPinMuxProtocolGuid
 
 [Depex]
-  gTegraPinMuxProtocolGuid
+  TRUE

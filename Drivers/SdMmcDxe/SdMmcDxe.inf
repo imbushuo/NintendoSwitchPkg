@@ -8,6 +8,7 @@
 
 [Sources.common]
   SdMmc.c
+  MmcHostOp.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
@@ -31,7 +32,6 @@
   IoLib
   EarlyTimerLib
   Max7762xPmicLib
-  PinmuxLib
   GpioLib
   I2cLib
   ClockLib

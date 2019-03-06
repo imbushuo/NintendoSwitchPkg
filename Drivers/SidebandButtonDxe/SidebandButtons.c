@@ -18,7 +18,6 @@
 #include <Device/Max77620.h>
 #include <Library/Max7762xLib.h>
 #include <Library/GpioLib.h>
-#include <Library/PinmuxLib.h>
 #include <Protocol/Pmic.h>
 #include <Device/StaticDevices.h>
 
@@ -66,12 +65,6 @@ SidebandButtonDxeInitialize
         (VOID**) &mPmicProtocol
     );
     if (EFI_ERROR(Status)) goto exit;
-
-    // Configure volume up/down as inputs.
-    gpio_config(GPIO_BY_NAME(BUTTON_VOL_UP), GPIO_MODE_GPIO);
-	gpio_config(GPIO_BY_NAME(BUTTON_VOL_DOWN), GPIO_MODE_GPIO);
-	gpio_output_enable(GPIO_BY_NAME(BUTTON_VOL_UP), GPIO_OUTPUT_DISABLE);
-	gpio_output_enable(GPIO_BY_NAME(BUTTON_VOL_DOWN), GPIO_OUTPUT_DISABLE);
 
     // Create polling.
     Status = gBS->CreateEvent(

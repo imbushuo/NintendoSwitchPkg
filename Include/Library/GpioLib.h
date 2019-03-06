@@ -84,4 +84,6 @@ static inline u32 gpio_index_bitmask(u32 index)
 
 #define GPIO_DECOMPOSE(x) gpio_index_port(x), gpio_index_bitmask(x)
 
+#include <Library/PinmuxLib.h>
+
 #endif

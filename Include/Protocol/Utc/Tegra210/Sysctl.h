@@ -11,6 +11,8 @@
 #include <PiDxe.h>
 #include <Uefi.h>
 
+#define CONFIG_TEGRA210
+
 struct sysctr_ctlr {
 	UINT32 cntcr;		/* 0x00: SYSCTR0_CNTCR Counter Control */
 	UINT32 cntsr;		/* 0x04: SYSCTR0_CNTSR Counter Status */

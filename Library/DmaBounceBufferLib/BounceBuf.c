@@ -11,8 +11,7 @@
 #include <Foundation/Types.h>
 #include <Shim/Kernel.h>
 #include <Shim/DebugLib.h>
-
-#define ARCH_DMA_MINALIGN __BIGGEST_ALIGNMENT__
+#include <Shim/MemAlign.h>
 
 static int addr_aligned(struct bounce_buffer *state)
 {
