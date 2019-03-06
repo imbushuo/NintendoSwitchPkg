@@ -221,6 +221,8 @@ ClockManagementDxeInitialize
     EFI_STATUS Status;
     EFI_HANDLE ProtoHandle = NULL;
 
+    UbInitialize();
+
     Status = gBS->InstallMultipleProtocolInterfaces(
         &ProtoHandle,
         &gTegra210ClockManagementProtocolGuid,

@@ -81,3 +81,13 @@ UbResetDeassert
 {
     return reset_set_enable(RstPId, 0);
 }
+
+VOID
+EFIAPI
+UbInitialize
+(
+    VOID
+)
+{
+    clock_init();
+}

@@ -1,0 +1,51 @@
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SdMmcDxe
+  FILE_GUID                      = 5d69e400-e850-4a90-8b9b-e97a8c22237d
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = SdMmcDxeInitialize
+
+[Sources.common]
+  SdMmc.c
+
+[Packages]
+  ArmPkg/ArmPkg.dec
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  NintendoSwitchPkg/NintendoSwitch.dec
+
+[LibraryClasses]
+  BaseLib
+  ReportStatusCodeLib
+  UefiLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  BaseMemoryLib
+  DebugLib
+  CompilerIntrinsicsLib
+  CacheMaintenanceLib
+  PcdLib
+  TimerLib
+  IoLib
+  EarlyTimerLib
+  Max7762xPmicLib
+  PinmuxLib
+  GpioLib
+  I2cLib
+  ClockLib
+
+[BuildOptions.AARCH64]
+  GCC:*_*_*_CC_FLAGS = -Wno-unused-function -Wno-unused-variable
+
+[Protocols]
+  gTegra210ClockManagementProtocolGuid
+  gTegraUBootClockManagementProtocolGuid
+  gPmicProtocolGuid
+  gEfiBlockIoProtocolGuid
+  gEfiDevicePathProtocolGuid
+
+[Depex]
+  gTegraUBootClockManagementProtocolGuid AND
+  gPmicProtocolGuid

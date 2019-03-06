@@ -52,9 +52,34 @@ SetRegulatorVoltage
     return EFI_SUCCESS;
 }
 
+STATIC
+EFIAPI
+VOID
+EnableRegulator
+(
+    UINT32 DeviceId
+)
+{
+    max77620_regulator_enable(DeviceId, 1);
+}
+
+STATIC
+EFIAPI
+VOID
+DisableRegulator
+(
+    UINT32 DeviceId
+)
+{
+    max77620_regulator_enable(DeviceId, 0);
+}
+
+
 STATIC PMIC_PROTOCOL mPmicProto = {
     QueryPowerButton,
     SetRegulatorVoltage,
+    EnableRegulator,
+    DisableRegulator
 };
 
 EFI_STATUS

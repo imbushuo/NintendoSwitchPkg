@@ -44,4 +44,11 @@ UbResetDeassert
     IN UINT64 RstPId
 );
 
+VOID
+EFIAPI
+UbInitialize
+(
+    VOID
+);
+
 #endif
