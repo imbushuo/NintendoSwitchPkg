@@ -133,6 +133,9 @@
   # System Libraries
   EfiResetSystemLib|ArmPkg/Library/ArmPsciResetSystemLib/ArmPsciResetSystemLib.inf
 
+  # Support Libraries
+  DmaBounceBufferLib|NintendoSwitchPkg/Library/DmaBounceBufferLib/DmaBounceBufferLib.inf
+
 [LibraryClasses.common.SEC]
   PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
   BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
