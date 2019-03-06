@@ -354,6 +354,7 @@ int tegra_mmc_send_cmd(
 	size_t len;
 	struct bounce_buffer bbstate;
 	int ret;
+	EFI_TPL Tpl = gBS->RaiseTPL(TPL_NOTIFY);
 
 	if (data) {
 		if (data->flags & MMC_DATA_READ) {
@@ -373,6 +374,7 @@ int tegra_mmc_send_cmd(
 	if (data)
 		bounce_buffer_stop(&bbstate);
 
+	gBS->RestoreTPL(Tpl);
 	return ret;
 }
 
@@ -532,6 +534,9 @@ TegraMmcInit
         goto exit;
     }
 
+	priv->version = readw(&priv->reg->hcver);
+	debug("host version = %x\n", priv->version);
+
     /* mask all */
 	writel(0xffffffff, &priv->reg->norintstsen);
 	writel(0xffffffff, &priv->reg->norintsigen);
@@ -576,31 +581,23 @@ SdControllerProbe
     int ret = 0;
     
     // Power on controller
-    APB_MISC(APB_MISC_GP_SDMMC1_CLK_LPBK_CONTROL) = 1;
-	// PINMUX_AUX(PINMUX_AUX_SDMMC1_CLK)  = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED;
-	// PINMUX_AUX(PINMUX_AUX_SDMMC1_CMD)  = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
-	// PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT3) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
-	// PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT2) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
-	// PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT1) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
-	// PINMUX_AUX(PINMUX_AUX_SDMMC1_DAT0) = PINMUX_DRIVE_2X | PINMUX_INPUT_ENABLE | PINMUX_PARKED | PINMUX_PULL_UP;
+    // APB_MISC(APB_MISC_GP_SDMMC1_CLK_LPBK_CONTROL) = 1;
 
     // Make sure the SDMMC1 controller is powered.
-	PMC(APBDEV_PMC_NO_IOPOWER) &= ~(1 << 12);
+	// PMC(APBDEV_PMC_NO_IOPOWER) &= ~(1 << 12);
 
 	// Assume 3.3V SD card voltage.
-	PMC(APBDEV_PMC_PWR_DET_VAL) |= (1 << 12);
+	// PMC(APBDEV_PMC_PWR_DET_VAL) |= (1 << 12);
 
     // Enable SD card power.
-    mPmicProtocol->SetRegulatorVoltage(REGULATOR_LDO2, 3300000);
-    mPmicProtocol->EnableRegulator(REGULATOR_LDO2);
-    gBS->Stall(1000);
-
-    // For good measure.
-	// APB_MISC(APB_MISC_GP_SDMMC1_PAD_CFGPADCTRL) = 0x10000000;
+    // mPmicProtocol->SetRegulatorVoltage(REGULATOR_LDO2, 3300000);
+    // mPmicProtocol->EnableRegulator(REGULATOR_LDO2);
+    // gBS->Stall(1000);
 
     // Set configuration
     mConfig.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
     mConfig.host_caps = 0;
+	
     // bus-width = <4>;
     mConfig.host_caps |= MMC_MODE_4BIT;
     mConfig.host_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
@@ -613,6 +610,7 @@ SdControllerProbe
 	 */
 	mConfig.f_min = 375000;
 	mConfig.f_max = 48000000;
+	mConfig.f_current = mConfig.f_min;
 
 	mConfig.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 
@@ -653,12 +651,9 @@ SdControllerProbe
     }
 
     // power-gpios = <&gpio TEGRA_GPIO(E, 4) GPIO_ACTIVE_HIGH>;
-    // GPIO control, pull down.
-    // PINMUX_AUX(PINMUX_AUX_DMIC3_CLK) = PINMUX_INPUT_ENABLE | PINMUX_PULL_DOWN | 1;
-	// gpio_config(GPIO_PORT_E, GPIO_PIN_4, GPIO_MODE_GPIO);
-	// gpio_write(GPIO_PORT_E, GPIO_PIN_4, GPIO_HIGH);
-	// gpio_output_enable(GPIO_PORT_E, GPIO_PIN_4, GPIO_OUTPUT_ENABLE);
-    // gBS->Stall(1000);
+	gpio_config(GPIO_PORT_E, GPIO_PIN_4, GPIO_MODE_GPIO);
+	gpio_write(GPIO_PORT_E, GPIO_PIN_4, GPIO_HIGH);
+	gpio_output_enable(GPIO_PORT_E, GPIO_PIN_4, GPIO_OUTPUT_ENABLE);
 
     return EFI_SUCCESS;
 }
@@ -696,7 +691,8 @@ SdMmcDxeInitialize
 	if (EFI_ERROR(Status)) goto exit;
 
 	// Check some commands
-	SdFxStart();
+	SdFxInit();
+	// SdFxStart();
 
 exit:
     ASSERT_EFI_ERROR(Status);
