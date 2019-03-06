@@ -14,4 +14,9 @@ inline UINT64 timer_get_us(void)
     return GetTimeInNanoSecond(GetPerformanceCounter()) / 1000;
 }
 
+inline UINT64 get_timer(UINT64 base)
+{
+    return (GetTimeInNanoSecond(GetPerformanceCounter()) / 1000) - base;
+}
+
 #endif

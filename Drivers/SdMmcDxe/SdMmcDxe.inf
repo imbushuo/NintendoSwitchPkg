@@ -35,6 +35,7 @@
   GpioLib
   I2cLib
   ClockLib
+  DmaBounceBufferLib
 
 [BuildOptions.AARCH64]
   GCC:*_*_*_CC_FLAGS = -Wno-unused-function -Wno-unused-variable
