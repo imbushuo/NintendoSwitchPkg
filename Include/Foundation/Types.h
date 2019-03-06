@@ -30,6 +30,7 @@ typedef volatile UINT16 vu16;
 typedef volatile UINT32 vu32;
 typedef volatile UINT64 vu64;
 typedef unsigned int uint;
+typedef unsigned short ushort;
 
 #define memcpy(s1, s2, n) CopyMem((s1), (s2), (n))
 #define memmove(s1, s2, n) CopyMem((s1), (s2), (n))

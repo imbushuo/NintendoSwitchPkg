@@ -10,6 +10,7 @@
 #include <Library/BaseLib.h>
 #include <Library/CacheMaintenanceLib.h>
 #include <Library/DevicePathLib.h>
+#include <Library/IoLib.h>
 #include <Protocol/BlockIo.h>
 #include <Protocol/BlockIo2.h>
 #include <Protocol/DevicePath.h>
@@ -25,9 +26,151 @@
 #include <Library/PinmuxLib.h>
 #include <Library/GpioLib.h>
 #include <Protocol/Pmic.h>
+#include <Shim/DebugLib.h>
+#include <Shim/UBootIo.h>
+#include <Shim/TimerLib.h>
+#include <Shim/BitOps.h>
+
+#include "Include/SdMmc.h"
 
 TEGRA210_UBOOT_CLOCK_MANAGEMENT_PROTOCOL* mClkProtocol;
 PMIC_PROTOCOL* mPmicProtocol;
+MMC_CONFIG mConfig;
+TEGRA_MMC_PRIV mPriv;
+
+static void tegra_mmc_set_power(
+    struct tegra_mmc_priv *priv,
+    unsigned short power)
+{
+	u8 pwr = 0;
+	debug("%s: power = %x\n", __func__, power);
+
+	if (power != (unsigned short)-1) {
+		switch (1 << power) {
+		case MMC_VDD_165_195:
+			pwr = TEGRA_MMC_PWRCTL_SD_BUS_VOLTAGE_V1_8;
+			break;
+		case MMC_VDD_29_30:
+		case MMC_VDD_30_31:
+			pwr = TEGRA_MMC_PWRCTL_SD_BUS_VOLTAGE_V3_0;
+			break;
+		case MMC_VDD_32_33:
+		case MMC_VDD_33_34:
+			pwr = TEGRA_MMC_PWRCTL_SD_BUS_VOLTAGE_V3_3;
+			break;
+		}
+	}
+	debug("%s: pwr = %X\n", __func__, pwr);
+
+	/* Set the bus voltage first (if any) */
+	writeb(pwr, &priv->reg->pwrcon);
+	if (pwr == 0) return;
+
+	/* Now enable bus power */
+	pwr |= TEGRA_MMC_PWRCTL_SD_BUS_POWER;
+	writeb(pwr, &priv->reg->pwrcon);
+}
+
+static void tegra_mmc_pad_init(struct tegra_mmc_priv *priv)
+{
+    // Nothing to do for Tegra 210
+    return;
+}
+
+EFI_STATUS
+TegraMmcReset
+(
+    PTEGRA_MMC_PRIV priv
+)
+{
+    unsigned int timeout;
+	debug(" mmc_reset called\n");
+
+    /*
+	 * RSTALL[0] : Software reset for all
+	 * 1 = reset
+	 * 0 = work
+	 */
+	writeb(TEGRA_MMC_SWRST_SW_RESET_FOR_ALL, &priv->reg->swrst);
+
+	priv->clock = 0;
+
+	/* Wait max 100 ms */
+	timeout = 100;
+
+    /* hw clears the bit when it's done */
+	while (readb(&priv->reg->swrst) & TEGRA_MMC_SWRST_SW_RESET_FOR_ALL) {
+		if (timeout == 0) {
+			printf("%s: timeout error\n", __func__);
+			return EFI_TIMEOUT;
+		}
+		timeout--;
+		udelay(1000);
+	}
+
+    /* Set SD bus voltage & enable bus power */
+	tegra_mmc_set_power(priv, fls(mConfig.voltages) - 1);
+	debug("%s: power control = %02X, host control = %02X\n", __func__,
+		readb(&priv->reg->pwrcon), readb(&priv->reg->hostctl));
+
+	/* Make sure SDIO pads are set up */
+	tegra_mmc_pad_init(priv);
+
+    return EFI_SUCCESS;
+}
+
+EFI_STATUS
+TegraMmcInit
+(
+    VOID
+)
+{
+    PTEGRA_MMC_PRIV priv = &mPriv;
+    unsigned int mask;
+    EFI_STATUS Status;
+	debug(" tegra_mmc_init called\n");
+
+    Status = TegraMmcReset(priv);
+    if (EFI_ERROR(Status))
+    {
+        DEBUG((EFI_D_ERROR, "SDMMC reset failed \n"));
+        goto exit;
+    }
+
+    /* mask all */
+	writel(0xffffffff, &priv->reg->norintstsen);
+	writel(0xffffffff, &priv->reg->norintsigen);
+
+    writeb(0xe, &priv->reg->timeoutcon);	/* TMCLK * 2^27 */
+	/*
+	 * NORMAL Interrupt Status Enable Register init
+	 * [5] ENSTABUFRDRDY : Buffer Read Ready Status Enable
+	 * [4] ENSTABUFWTRDY : Buffer write Ready Status Enable
+	 * [3] ENSTADMAINT   : DMA boundary interrupt
+	 * [1] ENSTASTANSCMPLT : Transfre Complete Status Enable
+	 * [0] ENSTACMDCMPLT : Command Complete Status Enable
+	*/
+	mask = readl(&priv->reg->norintstsen);
+	mask &= ~(0xffff);
+	mask |= (TEGRA_MMC_NORINTSTSEN_CMD_COMPLETE |
+		 TEGRA_MMC_NORINTSTSEN_XFER_COMPLETE |
+		 TEGRA_MMC_NORINTSTSEN_DMA_INTERRUPT |
+		 TEGRA_MMC_NORINTSTSEN_BUFFER_WRITE_READY |
+		 TEGRA_MMC_NORINTSTSEN_BUFFER_READ_READY);
+	writel(mask, &priv->reg->norintstsen);
+
+	/*
+	 * NORMAL Interrupt Signal Enable Register init
+	 * [1] ENSTACMDCMPLT : Transfer Complete Signal Enable
+	 */
+	mask = readl(&priv->reg->norintsigen);
+	mask &= ~(0xffff);
+	mask |= TEGRA_MMC_NORINTSIGEN_XFER_COMPLETE;
+	writel(mask, &priv->reg->norintsigen);
+
+exit:
+    return Status;
+}
 
 EFI_STATUS
 SdControllerProbe
@@ -59,6 +202,27 @@ SdControllerProbe
 
     // For good measure.
 	APB_MISC(APB_MISC_GP_SDMMC1_PAD_CFGPADCTRL) = 0x10000000;
+
+    // Set configuration
+    mConfig.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
+    mConfig.host_caps = 0;
+    // bus-width = <4>;
+    mConfig.host_caps |= MMC_MODE_4BIT;
+    mConfig.host_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
+
+    /*
+	 * min freq is for card identification, and is the highest
+	 *  low-speed SDIO card frequency (actually 400KHz)
+	 * max freq is highest HS eMMC clock as per the SD/MMC spec
+	 *  (actually 52MHz)
+	 */
+	mConfig.f_min = 375000;
+	mConfig.f_max = 48000000;
+
+	mConfig.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
+
+    // sdhci@700b0000
+    mPriv.reg = (VOID*) (UINTN) 0x700b0000;
 
     // Reset controller 1, &tegra_car 14
     mClkProtocol->AssertRst(PERIPH_ID_SDMMC1);
