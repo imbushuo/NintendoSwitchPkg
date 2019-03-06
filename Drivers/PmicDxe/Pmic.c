@@ -120,6 +120,7 @@ PmicDxeInitialize
     max77620_send_byte(MAX77620_REG_FPS_CFG0, 0x38);
 	max77620_send_byte(MAX77620_REG_FPS_CFG1, 0x3A);
 	max77620_send_byte(MAX77620_REG_FPS_CFG2, 0x38);
+    max77620_regulator_config_fps(REGULATOR_LDO1);
 	max77620_regulator_config_fps(REGULATOR_LDO4);
 	max77620_regulator_config_fps(REGULATOR_LDO8);
 	max77620_regulator_config_fps(REGULATOR_SD0);
@@ -133,6 +134,18 @@ PmicDxeInitialize
 	// Start up the SDMMC1 IO voltage regulator
 	max77620_regulator_set_voltage(REGULATOR_LDO2, 3300000);
 	max77620_regulator_enable(REGULATOR_LDO2, 1);
+
+    // Start up the PCIe power
+    max77620_regulator_set_voltage(REGULATOR_LDO1, 1050000);
+    max77620_regulator_enable(REGULATOR_LDO1, 1);
+
+    // Disable LDO4 discharge
+    max77620_regulator_enable(REGULATOR_LDO4, 0);
+
+    // Set MBLPD
+    int bVal = max77620_recv_byte(MAX77620_REG_CNFGGLBL1);
+    bVal |= BIT(6);
+    max77620_send_byte(MAX77620_REG_CNFGGLBL1, bVal);
 
 	// Remove isolation from SDMMC1 and core domain
 	PMC(APBDEV_PMC_NO_IOPOWER) &= ~(1 << 12);
