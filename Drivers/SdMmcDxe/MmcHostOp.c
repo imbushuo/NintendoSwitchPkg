@@ -555,7 +555,6 @@ static int mmc_startup(struct mmc *mmc)
 
 	err = tegra_mmc_send_cmd(&mPriv, &cmd, NULL);
 	if (err) goto exit;
-
 	CopyMem(mmc->cid, cmd.response, 16);
 
 	/*
@@ -570,8 +569,7 @@ static int mmc_startup(struct mmc *mmc)
 	err = tegra_mmc_send_cmd(&mPriv, &cmd, NULL);
 	if (err) goto exit;
 
-	if (IS_SD(mmc))
-		mmc->rca = (cmd.response[0] >> 16) & 0xffff;
+	if (IS_SD(mmc)) mmc->rca = (cmd.response[0] >> 16) & 0xffff;
 
 	/* Get the Card-Specific Data */
 	cmd.cmdidx = MMC_CMD_SEND_CSD;
@@ -695,7 +693,6 @@ static int mmc_startup(struct mmc *mmc)
 
 	/* Restrict card's capabilities by what the host can do */
 	mmc->card_caps &= mmc->cfg->host_caps;
-
 	if (IS_SD(mmc)) 
 	{
 		if (mmc->card_caps & MMC_MODE_4BIT) 
@@ -779,7 +776,6 @@ int mmc_switch_part(struct mmc *mmc, unsigned int part_num)
 
 	return ret;
 }
-
 
 static int mmc_select_hwpart(int hwpart)
 {
@@ -929,7 +925,6 @@ SdFxInit(
     }
 
 	if (!err) mMmcInstance.init_in_progress = 1;
-
 	return err;
 }
 

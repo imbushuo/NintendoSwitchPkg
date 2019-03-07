@@ -381,7 +381,6 @@ int tegra_mmc_send_cmd(
 	size_t len;
 	struct bounce_buffer bbstate;
 	int ret;
-	EFI_TPL Tpl = gBS->RaiseTPL(TPL_NOTIFY);
 
 	if (data) 
 	{
@@ -404,20 +403,9 @@ int tegra_mmc_send_cmd(
 
 	if (data)
 	{
-		if (bbstate.len >= 512 && bbstate.len_aligned >= 512)
-		{
-			UINT8* b = bbstate.bounce_buffer;
-			for (UINTN i = 1; i <= 512; i++)
-			{
-				DEBUG((EFI_D_INFO, "%x ", b[i]));
-				if (i % 20 == 0) DEBUG((EFI_D_INFO, "\n"));
-			}
-			ASSERT(FALSE);
-		}
 		bounce_buffer_stop(&bbstate);
 	}
 
-	gBS->RestoreTPL(Tpl);
 	return ret;
 }
 
@@ -733,43 +721,61 @@ SdMmcDxeInitialize
 		goto exit;
 	}
 
-	// Run a self test
-	//
-	// Dump content to verify Read status
-	//
-	UINT8 BlkDump[512];
-	int blk = mmc_bread(0, 1, &BlkDump);
-	if (blk)
+	if (mMmcInstance.has_init == 1)
 	{
-		DEBUG((EFI_D_INFO, "First 512 bytes (read %d blkl): \n", blk));
-		for (UINTN Bi = 1; Bi <= 512; Bi++)
+		// Run a self test
+		//
+		// Dump content to verify Read status
+		//
+		UINT8 BlkDump[512];
+		ZeroMem(BlkDump, 512);
+		BOOLEAN FoundMbr = FALSE;
+		for (UINTN i = 0; i <= MIN(mBlkDesc.lba, 50); i++)
 		{
-			DEBUG((EFI_D_INFO, "%x ", BlkDump[Bi]));
-			if (Bi % 20 == 0) DEBUG((EFI_D_INFO, "\n"));
+			int blk = mmc_bread(i, 1, &BlkDump);
+			if (blk)
+			{
+				if (BlkDump[510] == 0x55 && BlkDump[511] == 0xAA)
+				{
+					DEBUG((EFI_D_INFO, "MBR found at %d \n", i));
+					FoundMbr = TRUE;
+					break;
+				}
+				DEBUG((EFI_D_INFO, "MBR not found at %d \n", i));
+			}
 		}
-		CpuDeadLoop();
-	}
-	else
-	{
-		CpuDeadLoop();
-	}
-	
-	// Install EFI protocol
-	ASSERT(mBlkDesc.lba != 0);
-	ASSERT(mBlkDesc.blksz != 0);
-	Status = BioInstanceContructor(&Instance);
-	if (EFI_ERROR(Status)) goto exit;
 
-	Instance->BlockMedia.BlockSize = mBlkDesc.blksz;
-	Instance->BlockMedia.LastBlock = mBlkDesc.lba;
-	Status = gBS->InstallMultipleProtocolInterfaces(
-		&Instance->Handle,
-		&gEfiBlockIoProtocolGuid,    
-		&Instance->BlockIo,
-		&gEfiDevicePathProtocolGuid, 
-		&Instance->DevicePath,
-		NULL
-	);
+		if (FoundMbr)
+		{
+			for (UINTN k = 0; k < 512; k++)
+			{
+				DEBUG((EFI_D_INFO, "%08x ", BlkDump[k]));
+				if ((k+1) % 10 == 0) DEBUG((EFI_D_INFO, "\n"));
+			}
+		}
+		else
+		{
+			DEBUG((EFI_D_ERROR, "(Protective) MBR not found \n"));
+			CpuDeadLoop();
+		}
+		
+		// Install EFI protocol
+		ASSERT(mBlkDesc.lba != 0);
+		ASSERT(mBlkDesc.blksz != 0);
+		Status = BioInstanceContructor(&Instance);
+		if (EFI_ERROR(Status)) goto exit;
+
+		Instance->BlockMedia.BlockSize = mBlkDesc.blksz;
+		Instance->BlockMedia.LastBlock = mBlkDesc.lba;
+		Status = gBS->InstallMultipleProtocolInterfaces(
+			&Instance->Handle,
+			&gEfiBlockIoProtocolGuid,    
+			&Instance->BlockIo,
+			&gEfiDevicePathProtocolGuid, 
+			&Instance->DevicePath,
+			NULL
+		);
+	}
 
 exit:
     ASSERT_EFI_ERROR(Status);

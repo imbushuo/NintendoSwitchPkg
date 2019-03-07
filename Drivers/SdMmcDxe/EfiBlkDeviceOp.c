@@ -126,7 +126,6 @@ MMCHSReadBlocks(
     rc = mmc_bread(Lba, BufferSize / BlockSize, Buffer);
     if (rc) return EFI_SUCCESS;
 
-    ASSERT(FALSE);
     return EFI_DEVICE_ERROR;
 }
 
