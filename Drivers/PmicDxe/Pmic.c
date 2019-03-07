@@ -92,6 +92,7 @@ PmicDxeInitialize
 {
     EFI_STATUS Status;
     EFI_HANDLE ProtoHandle = NULL;
+    UINT8 bVal;
 
     Status = gBS->LocateProtocol(
         &gTegra210ClockManagementProtocolGuid,
@@ -101,9 +102,6 @@ PmicDxeInitialize
     if (EFI_ERROR(Status)) goto exit;
 
     // Clock init
-    Status = mClockProtocol->EnableClDvfs();
-    if (EFI_ERROR(Status)) goto exit;
-
     Status = mClockProtocol->EnableI2c(I2C_1);
     if (EFI_ERROR(Status)) goto exit;
 
@@ -114,43 +112,21 @@ PmicDxeInitialize
     i2c_init(I2C_1);
     i2c_init(I2C_5);
 
-    // PMIC, SDMMC1 power init
-    max77620_send_byte(MAX77620_REG_CNFGBBC, 0x40);
-	max77620_send_byte(MAX77620_REG_ONOFFCNFG1, 0x78);
-    max77620_send_byte(MAX77620_REG_FPS_CFG0, 0x38);
-	max77620_send_byte(MAX77620_REG_FPS_CFG1, 0x3A);
-	max77620_send_byte(MAX77620_REG_FPS_CFG2, 0x38);
-    max77620_regulator_config_fps(REGULATOR_LDO1);
-	max77620_regulator_config_fps(REGULATOR_LDO4);
-	max77620_regulator_config_fps(REGULATOR_LDO8);
-	max77620_regulator_config_fps(REGULATOR_SD0);
-	max77620_regulator_config_fps(REGULATOR_SD1);
-	max77620_regulator_config_fps(REGULATOR_SD3);
-    max77620_regulator_set_voltage(REGULATOR_SD0, 1125000); // 1.125V
-
-    // Set SDMMC1 IO clamps to default value before changing voltage
-	PMC(APBDEV_PMC_PWR_DET_VAL) |= (1 << 12);
-
-	// Start up the SDMMC1 IO voltage regulator
-	max77620_regulator_set_voltage(REGULATOR_LDO2, 3300000);
-	max77620_regulator_enable(REGULATOR_LDO2, 1);
-
-    // Start up the PCIe power
-    max77620_regulator_set_voltage(REGULATOR_LDO1, 1050000);
-    max77620_regulator_enable(REGULATOR_LDO1, 1);
+	// Start up the SDMMC1 IO voltage regulator @ 3.3V
+    max77620_send_byte(MAX77620_REG_LDO2_CFG, 0xF2);
 
     // Disable LDO4 discharge
-    max77620_regulator_enable(REGULATOR_LDO4, 0);
+    bVal = max77620_recv_byte(MAX77620_REG_LDO4_CFG);
+    bVal &= ~BIT(1);
+    max77620_send_byte(MAX77620_REG_LDO4_CFG, bVal);
 
     // Set MBLPD
-    int bVal = max77620_recv_byte(MAX77620_REG_CNFGGLBL1);
+    bVal = max77620_recv_byte(MAX77620_REG_CNFGGLBL1);
     bVal |= BIT(6);
     max77620_send_byte(MAX77620_REG_CNFGGLBL1, bVal);
 
-	// Remove isolation from SDMMC1 and core domain
-	PMC(APBDEV_PMC_NO_IOPOWER) &= ~(1 << 12);
-
-    CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) = (CLOCK(CLK_RST_CONTROLLER_SCLK_BURST_POLICY) & 0xFFFF8888) | 0x3333;
+    // Start up the PCIe power
+    max77620_send_byte(MAX77620_REG_LDO1_CFG, 0xCA);
 
     // Install protocol
     Status = gBS->InstallMultipleProtocolInterfaces(

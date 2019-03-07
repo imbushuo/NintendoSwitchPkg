@@ -315,6 +315,51 @@ struct sd_ssr {
 	unsigned int erase_offset;	/* In milliseconds */
 };
 
+/*
+ * With CONFIG_DM_MMC enabled, struct mmc can be accessed from the MMC device
+ * with mmc_get_mmc_dev().
+ *
+ * TODO struct mmc should be in mmc_private but it's hard to fix right now
+ */
+struct mmc {
+	const struct mmc_config *cfg;	/* provided configuration */
+	uint version;
+	void *priv;
+	uint has_init;
+	int high_capacity;
+	uint bus_width;
+	uint clock;
+	uint card_caps;
+	uint ocr;
+	uint dsr;
+	uint dsr_imp;
+	uint scr[2];
+	uint csd[4];
+	uint cid[4];
+	ushort rca;
+	u8 part_support;
+	u8 part_attr;
+	u8 wr_rel_set;
+	u8 part_config;
+	uint tran_speed;
+	uint read_bl_len;
+	uint write_bl_len;
+	uint erase_grp_size;	/* in 512-byte sectors */
+	uint hc_wp_grp_size;	/* in 512-byte sectors */
+	struct sd_ssr	ssr;	/* SD status register */
+	u64 capacity;
+	u64 capacity_user;
+	u64 capacity_boot;
+	u64 capacity_rpmb;
+	u64 capacity_gp[4];
+	u64 enh_user_start;
+	u64 enh_user_size;
+	char op_cond_pending;	/* 1 if we are waiting on an op_cond command */
+	char init_in_progress;	/* 1 if we have done mmc_start_init() */
+	char preinit;		/* start init as early as possible */
+	int ddr_mode;
+};
+
 struct mmc_hwpart_conf {
 	struct {
 		uint enh_start;	/* in 512-byte sectors */

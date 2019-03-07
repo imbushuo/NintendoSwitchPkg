@@ -4,9 +4,16 @@
 #include <Uefi.h>
 
 EFIAPI
-VOID
-SdFxStart(
+int
+SdFxInit(
     VOID
+);
+
+EFIAPI
+int
+SdFxInitFinalize
+(
+	VOID
 );
 
 #endif

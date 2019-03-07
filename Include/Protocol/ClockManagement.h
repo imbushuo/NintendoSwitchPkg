@@ -15,6 +15,7 @@ typedef EFI_STATUS (EFIAPI *clk_sdmmc_enable_t)(UINT32 Index, UINT32 Clock);
 typedef EFI_STATUS (EFIAPI *clk_sdmmc_disable_t)(UINT32 Index);
 typedef EFI_STATUS (EFIAPI *clk_sdmmc_sel_clk_src_t)(UINT32 *pOut, UINT32 Index, UINT32 Value);
 
+
 struct _TEGRA210_CLOCK_MGMT_PROTOCOL {
     clk_uart_enable_t       EnableUart;
     clk_i2c_enable_t        EnableI2c;

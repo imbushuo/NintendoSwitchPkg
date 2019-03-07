@@ -18,7 +18,6 @@
 #include <Shim/DebugLib.h>
 #include <Shim/TimerLib.h>
 #include <Shim/UBootIo.h>
-#include <Library/TimerLib.h>
 
 /*
  * This is our record of the current clock rate of each clock. We don't
@@ -160,7 +159,7 @@ unsigned long clock_start_pll(enum clock_id clkid, u32 divm, u32 divn,
 	}
 
 	/* calculate the stable time */
-	return timer_get_us() + CLOCK_PLL_STABLE_DELAY_US;
+	return (GetTimeInNanoSecond(GetPerformanceCounter()) / 1000) + CLOCK_PLL_STABLE_DELAY_US;
 }
 
 void clock_ll_set_source_divisor(enum periph_id periph_id, unsigned source,

@@ -49,8 +49,7 @@ void tegra_mmc_change_clock(
 );
 
 int tegra_mmc_set_ios(
-    uint bus_width, 
-    uint clock
+    struct mmc* mMmcInstance
 );
 
 #endif

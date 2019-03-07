@@ -8,6 +8,9 @@
 # define le32_to_cpu(x)		(x)
 # define le64_to_cpu(x)		(x)
 
+# define be32_to_cpu(x)		SwapBytes32(x)
+# define be64_to_cpu(x)		SwapBytes64(x)
+
 /*
  * Generic virtual read/write.  Note that we don't support half-word
  * read/writes.  We define __arch_*[bl] here, and leave __arch_*w

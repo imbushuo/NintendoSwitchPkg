@@ -8,15 +8,11 @@
 #include <Library/TimerLib.h>
 
 #define udelay(x) gBS->Stall((x))
+#define get_timer(x) ((GetTimeInNanoSecond(GetPerformanceCounter()) / 1000) - (x))
 
-inline UINT64 timer_get_us(void)
+inline UINT64 timer_get_us()
 {
     return GetTimeInNanoSecond(GetPerformanceCounter()) / 1000;
-}
-
-inline UINT64 get_timer(UINT64 base)
-{
-    return (GetTimeInNanoSecond(GetPerformanceCounter()) / 1000) - base;
 }
 
 #endif

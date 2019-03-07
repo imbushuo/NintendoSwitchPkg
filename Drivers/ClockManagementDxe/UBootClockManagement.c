@@ -84,10 +84,45 @@ UbResetDeassert
 
 VOID
 EFIAPI
+UbResetPeriph
+(
+    IN UINT64 PeriphId,
+    IN int Delay
+)
+{
+    reset_periph(PeriphId, Delay);
+}
+
+enum clock_osc_freq
+EFIAPI
+UbGetOscFreq
+(
+    VOID
+)
+{
+    return clock_get_osc_freq();
+}
+
+unsigned long
+EFIAPI
+UbStartPll
+(
+    enum clock_id clkid, 
+    u32 divm, u32 divn,
+	u32 divp, u32 cpcon, 
+    u32 lfcon
+)
+{
+    return clock_start_pll(clkid, divm, divn, divp, cpcon, lfcon);
+}
+
+VOID
+EFIAPI
 UbInitialize
 (
     VOID
 )
 {
     clock_init();
+    clock_verify();
 }

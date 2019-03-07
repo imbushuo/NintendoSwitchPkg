@@ -61,6 +61,16 @@ typedef BOOLEAN bool;
 	__rem;							\
  })
 
+/* Wrapper for do_div(). Doesn't modify dividend and returns
+ * the result, not reminder.
+ */
+static inline UINT64 lldiv(UINT64 dividend, UINT64 divisor)
+{
+	UINT64 __res = dividend;
+	do_div(__res, divisor);
+	return(__res);
+}
+
 #ifndef BIT
 #define BIT(nr)			(1UL << (nr))
 #endif

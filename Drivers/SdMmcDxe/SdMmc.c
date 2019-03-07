@@ -19,6 +19,8 @@
 #include <Protocol/UBootClockManagement.h>
 #include <Protocol/Utc/Clock.h>
 #include <Protocol/Utc/ErrNo.h>
+#include <Protocol/Utc/Mmc.h>
+#include <Protocol/Utc/UBootBlk.h>
 
 #include <Foundation/Types.h>
 #include <Device/T210.h>
@@ -38,6 +40,8 @@ TEGRA210_UBOOT_CLOCK_MANAGEMENT_PROTOCOL* mClkProtocol;
 PMIC_PROTOCOL* mPmicProtocol;
 MMC_CONFIG mConfig;
 TEGRA_MMC_PRIV mPriv;
+struct mmc mMmcInstance;
+struct blk_desc mBlkDesc;
 
 void tegra_mmc_set_power(
     struct tegra_mmc_priv *priv,
@@ -438,18 +442,17 @@ out:
 }
 
 int tegra_mmc_set_ios(
-    uint bus_width, 
-    uint clock
+    struct mmc* mMmcInstance
 )
 {
 	struct tegra_mmc_priv *priv = &mPriv;
 	unsigned char ctrl;
 	debug(" mmc_set_ios called\n");
 
-	debug("bus_width: %x, clock: %d\n", bus_width, clock);
+	debug("bus_width: %x, clock: %d\n", mMmcInstance->bus_width, mMmcInstance->clock);
 
 	/* Change clock first */
-	tegra_mmc_change_clock(priv, clock);
+	tegra_mmc_change_clock(priv, mMmcInstance->clock);
 
 	ctrl = readb(&priv->reg->hostctl);
 
@@ -461,9 +464,9 @@ int tegra_mmc_set_ios(
 	 * 1 = 4-bit mode
 	 * 0 = 1-bit mode
 	 */
-	if (bus_width == 8)
+	if (mMmcInstance->bus_width == 8)
 		ctrl |= (1 << 5);
-	else if (bus_width == 4)
+	else if (mMmcInstance->bus_width == 4)
 		ctrl |= (1 << 1);
 	else
 		ctrl &= ~(1 << 1 | 1 << 5);
@@ -506,7 +509,7 @@ TegraMmcReset
 	}
 
     /* Set SD bus voltage & enable bus power */
-	tegra_mmc_set_power(priv, fls(mConfig.voltages) - 1);
+	tegra_mmc_set_power(priv, fls(mMmcInstance.cfg->voltages) - 1);
 	debug("%s: power control = %02X, host control = %02X\n", __func__,
 		readb(&priv->reg->pwrcon), readb(&priv->reg->hostctl));
 
@@ -610,9 +613,12 @@ SdControllerProbe
 	 */
 	mConfig.f_min = 375000;
 	mConfig.f_max = 48000000;
-	mConfig.f_current = mConfig.f_min;
 
 	mConfig.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
+
+	// Bound to instance
+	mMmcInstance.cfg = &mConfig;
+	mMmcInstance.clock = mConfig.f_min;
 
     // sdhci@700b0000
     mPriv.reg = (VOID*) (UINTN) 0x700b0000;
@@ -691,8 +697,18 @@ SdMmcDxeInitialize
 	if (EFI_ERROR(Status)) goto exit;
 
 	// Check some commands
-	SdFxInit();
-	// SdFxStart();
+	int ret = SdFxInit();
+	if (ret) 
+	{
+		Status = EFI_DEVICE_ERROR;
+		goto exit;
+	}
+	ret = SdFxInitFinalize();
+	if (ret) 
+	{
+		Status = EFI_DEVICE_ERROR;
+		goto exit;
+	}
 
 exit:
     ASSERT_EFI_ERROR(Status);
