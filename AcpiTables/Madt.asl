@@ -50,7 +50,7 @@
 [0ACh 0172   8]  Hypervisor GIC Base Address : 0000000050044000
 [0B4h 0180   4]        Virtual GIC Interrupt : 00000019
 [0B8h 0184   8]   Redistributor Base Address : 0000000000000000
-[0C0h 0192   8]                    ARM MPIDR : 0000000000000100
+[0C0h 0192   8]                    ARM MPIDR : 0000000000000001
 [0C8h 0200   1]             Efficiency Class : 00
 [0C9h 0201   3]                     Reserved : 000000
 
@@ -71,7 +71,7 @@
 [0FCh 0252   8]  Hypervisor GIC Base Address : 0000000050044000
 [104h 0260   4]        Virtual GIC Interrupt : 00000019
 [108h 0264   8]   Redistributor Base Address : 0000000000000000
-[110h 0272   8]                    ARM MPIDR : 0000000000000200
+[110h 0272   8]                    ARM MPIDR : 0000000000000002
 [118h 0280   1]             Efficiency Class : 00
 [119h 0281   3]                     Reserved : 000000
 
@@ -92,7 +92,7 @@
 [14Ch 0332   8]  Hypervisor GIC Base Address : 0000000050044000
 [154h 0340   4]        Virtual GIC Interrupt : 00000019
 [158h 0344   8]   Redistributor Base Address : 0000000000000000
-[160h 0352   8]                    ARM MPIDR : 0000000000000300
+[160h 0352   8]                    ARM MPIDR : 0000000000000003
 [168h 0360   1]             Efficiency Class : 00
 [169h 0361   3]                     Reserved : 000000
 
