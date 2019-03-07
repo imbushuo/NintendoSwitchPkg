@@ -77,6 +77,7 @@ function SetupEnv()
 function FixPermission()
 {
   chmod +x NintendoSwitchPkg/Tools/*.ps1
+  chmod +x NintendoSwitchPkg/Tools/PsModules/*.psm1
   chmod +x NintendoSwitchPkg/Tools/*.sh
 }
 
@@ -95,8 +96,6 @@ function DevelopmentBuild()
       echo "[Builder] Build failed."
       return $?
   fi
-
-  ./NintendoSwitchPkg/Tools/build-elf.ps1
 }
 
 I=$#

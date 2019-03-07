@@ -1,5 +1,5 @@
 #!/usr/bin/pwsh
-# Copyright 2018, Bingxing Wang <i@imbushuo.net>
+# Copyright 2018-2019, Bingxing Wang <uefi-oss-projects@imbushuo.net>
 # All rights reserved.
 #
 # This script builds EDK2 content.
@@ -12,6 +12,8 @@ Param
     [switch] $UseNewerGcc
 )
 
+Import-Module $PSScriptRoot/PsModules/redirector.psm1
+Import-Module $PSScriptRoot/PsModules/elf.psm1
 Write-Host "Task: EDK2 build"
 
 # Targets. Ensure corresponding DSC/FDF files exist
@@ -20,39 +22,43 @@ $availableTargets = @(
 )
 
 # Check package path.
-if ((Test-Path -Path "NintendoSwitchPkg") -eq $null)
+if ($null -eq (Test-Path -Path "NintendoSwitchPkg"))
 {
-    Write-Error "NintendoSwitchPkg is not found."
+    Write-Error -Message "NintendoSwitchPkg is not found."
     return -1
 }
 
-# Set environment again.
-Write-Output "[EDK2Build] Set environment."
-$env:PATH="/opt/db-boot-tools:/opt/gcc-linaro-7.2.1-2017.11-x86_64_aarch64-elf/bin:/opt/gcc-linaro-6.4.1-2017.11-x86_64_arm-eabi/bin:$($env:PATH)"
-$env:GCC5_AARCH64_PREFIX="/opt/gcc-linaro-7.2.1-2017.11-x86_64_aarch64-elf/bin/aarch64-elf-"
+# Probe GCC
+# Probe GCC. Use the most suitable one
+$ccprefix = Get-GnuAarch64CrossCollectionPath -AllowFallback
+if ($null -eq $ccprefix) { return -1 }
+if ($false -eq (Test-GnuAarch64CrossCollectionVersionRequirements)) { return -1 }
+$env:GCC5_AARCH64_PREFIX = $ccprefix
+
+Write-Output "Use GCC at $($ccprefix) to run builds."
 
 # Build base tools if not exist (dev).
-if (((Test-Path -Path "BaseTools") -eq $false) -or ($Clean -eq $true))
+if (($false -eq (Test-Path -Path "BaseTools")) -or ($Clean -eq $true))
 {
-    Write-Output "[EDK2Build] Build base tools."
+    Write-Output "Build base tools."
     make -C BaseTools
     if (-not $?)
     {
-        Write-Error "[EDK2Build] Base tools target failed."
+        Write-Error "Base tools target failed."
         return $?
     }
 }
 
-if ($Clean -eq $true)
+if ($true -eq $Clean)
 {
 	foreach ($target in $availableTargets)
 	{
-		Write-Output "[EDK2Build] Clean target $($target)."
+		Write-Output "Clean target $($target)."
 		build -a AARCH64 -p NintendoSwitchPkg/$($target).dsc -t GCC5 clean
 
 		if (-not $?)
 		{
-			Write-Error "[EDK2Build] Clean target $($target) failed."
+			Write-Error "Clean target $($target) failed."
 			return $?
 		}
 	}
@@ -64,7 +70,7 @@ if ($Clean -eq $true)
 # Check current commit ID and write it into file for SMBIOS reference. (Trim it)
 # Check current date and write it into file for SMBIOS reference too. (MM/dd/yyyy)
 
-Write-Output "[EDK2Build] Stamp build."
+Write-Output "Stamp build."
 $commit = git rev-parse HEAD
 $date = (Get-Date).Date.ToString("MM/dd/yyyy")
 if ($commit)
@@ -90,12 +96,15 @@ if ($commit)
 
 foreach ($target in $availableTargets)
 {
-	Write-Output "[EDK2Build] Build NintendoSwitchPkg for $($target) (DEBUG)."
+	Write-Output "Build NintendoSwitchPkg for $($target) (DEBUG)."
 	build -a AARCH64 -p NintendoSwitchPkg/$($target).dsc -t GCC5
 
 	if (-not $?)
 	{
-		Write-Error "[EDK2Build] Build target $($target) failed."
+		Write-Error "Build target $($target) failed."
 		return $?
 	}
 }
+
+# Invoke ELF build.
+Copy-ElfImages
