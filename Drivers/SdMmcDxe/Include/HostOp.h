@@ -2,7 +2,6 @@
 #define __HOSTOP_H__
 
 #include <Uefi.h>
-
 EFIAPI
 int
 SdFxInit(
@@ -16,6 +15,6 @@ SdFxInitFinalize
 	VOID
 );
 
-ulong mmc_bread(lbaint_t start, lbaint_t blkcnt, void *dst);
+ulong mmc_bread(UINT64 start, UINT64 blkcnt, void *dst);
 
 #endif

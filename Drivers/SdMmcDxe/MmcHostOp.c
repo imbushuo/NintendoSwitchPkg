@@ -846,7 +846,7 @@ static int mmc_read_blocks(
 	return blkcnt;
 }
 
-ulong mmc_bread(lbaint_t start, lbaint_t blkcnt, void *dst)
+ulong mmc_bread(UINT64 start, UINT64 blkcnt, void *dst)
 {
 	struct mmc *mmc = &mMmcInstance;
 	struct blk_desc *block_dev = &mBlkDesc;

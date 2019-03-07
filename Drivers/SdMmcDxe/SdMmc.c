@@ -14,7 +14,6 @@
 #include <Protocol/BlockIo.h>
 #include <Protocol/BlockIo2.h>
 #include <Protocol/DevicePath.h>
-#include <Device/StaticDevices.h>
 
 #include <Protocol/UBootClockManagement.h>
 #include <Protocol/Utc/Clock.h>
@@ -35,6 +34,7 @@
 
 #include "Include/SdMmc.h"
 #include "Include/HostOp.h"
+#include "Include/EfiProto.h"
 
 TEGRA210_UBOOT_CLOCK_MANAGEMENT_PROTOCOL* mClkProtocol;
 PMIC_PROTOCOL* mPmicProtocol;
@@ -656,6 +656,7 @@ SdMmcDxeInitialize
 )
 {
     EFI_STATUS Status;
+	BIO_INSTANCE *Instance;
 
     Status = gBS->LocateProtocol(
         &gTegraUBootClockManagementProtocolGuid,
@@ -692,6 +693,23 @@ SdMmcDxeInitialize
 		Status = EFI_DEVICE_ERROR;
 		goto exit;
 	}
+
+	// Install EFI protocol
+	ASSERT(mBlkDesc.lba != 0);
+	ASSERT(mBlkDesc.blksz != 0);
+	Status = BioInstanceContructor(&Instance);
+	if (EFI_ERROR(Status)) goto exit;
+
+	Instance->BlockMedia.BlockSize = mBlkDesc.blksz;
+	Instance->BlockMedia.LastBlock = mBlkDesc.lba;
+	Status = gBS->InstallMultipleProtocolInterfaces(
+		&Instance->Handle,
+		&gEfiBlockIoProtocolGuid,    
+		&Instance->BlockIo,
+		&gEfiDevicePathProtocolGuid, 
+		&Instance->DevicePath,
+		NULL
+	);
 
 exit:
     ASSERT_EFI_ERROR(Status);
