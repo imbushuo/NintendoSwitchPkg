@@ -16,4 +16,6 @@ SdFxInitFinalize
 	VOID
 );
 
+ulong mmc_bread(lbaint_t start, lbaint_t blkcnt, void *dst);
+
 #endif

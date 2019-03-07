@@ -582,20 +582,12 @@ SdControllerProbe
 )
 {
     int ret = 0;
-    
-    // Power on controller
-    // APB_MISC(APB_MISC_GP_SDMMC1_CLK_LPBK_CONTROL) = 1;
 
-    // Make sure the SDMMC1 controller is powered.
-	// PMC(APBDEV_PMC_NO_IOPOWER) &= ~(1 << 12);
-
-	// Assume 3.3V SD card voltage.
-	// PMC(APBDEV_PMC_PWR_DET_VAL) |= (1 << 12);
-
-    // Enable SD card power.
-    // mPmicProtocol->SetRegulatorVoltage(REGULATOR_LDO2, 3300000);
-    // mPmicProtocol->EnableRegulator(REGULATOR_LDO2);
-    // gBS->Stall(1000);
+	// All init
+	ZeroMem(&mBlkDesc, sizeof(struct blk_desc));
+	ZeroMem(&mMmcInstance, sizeof(struct mmc));
+	ZeroMem(&mPriv, sizeof(TEGRA_MMC_PRIV));
+	ZeroMem(&mConfig, sizeof(MMC_CONFIG));
 
     // Set configuration
     mConfig.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
@@ -639,15 +631,6 @@ SdControllerProbe
 
     // De-assert
     mClkProtocol->DeassertRst(PERIPH_ID_SDMMC1);
-
-    // Also get GPIOs, initialize MUX
-    // cd-gpios = <&gpio TEGRA_GPIO(Z, 1) GPIO_ACTIVE_LOW>;
-    // GPIO control, pull up.
-    // PINMUX_AUX(PINMUX_AUX_GPIO_PZ1) = PINMUX_INPUT_ENABLE | PINMUX_PULL_UP | 1;
-	// APB_MISC(APB_MISC_GP_VGPIO_GPIO_MUX_SEL) = 0;
-	// gpio_config(GPIO_PORT_Z, GPIO_PIN_1, GPIO_MODE_GPIO);
-	// gpio_output_enable(GPIO_PORT_Z, GPIO_PIN_1, GPIO_OUTPUT_DISABLE);
-    // gBS->Stall(100);
 
     // Detect card
     if(!!gpio_read(GPIO_PORT_Z, GPIO_PIN_1))

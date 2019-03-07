@@ -282,6 +282,76 @@ static int sd_switch(struct mmc *mmc, int mode, int group, u8 value, u8 *resp)
 	return tegra_mmc_send_cmd(&mPriv, &cmd, &data);
 }
 
+int mmc_send_status(struct mmc *mmc, int timeout)
+{
+	struct mmc_cmd cmd;
+	int err, retries = 5;
+
+	cmd.cmdidx = MMC_CMD_SEND_STATUS;
+	cmd.resp_type = MMC_RSP_R1;
+	cmd.cmdarg = mmc->rca << 16;
+
+	while (1) 
+	{
+		err = tegra_mmc_send_cmd(&mPriv, &cmd, NULL);
+		if (!err) 
+		{
+			if ((cmd.response[0] & MMC_STATUS_RDY_FOR_DATA) &&
+			    (cmd.response[0] & MMC_STATUS_CURR_STATE) !=
+			     MMC_STATE_PRG)
+				break;
+			else if (cmd.response[0] & MMC_STATUS_MASK) {
+				printf("Status Error: 0x%08X\n", cmd.response[0]);
+				return -ECOMM;
+			}
+		} 
+		else if (--retries < 0)
+		{
+			return err;
+		}
+
+		if (timeout-- <= 0) break;
+		udelay(1000);
+	}
+
+	if (timeout <= 0) 
+	{
+		printf("Timeout waiting card ready\n");
+		return -ETIMEDOUT;
+	}
+
+	return 0;
+}
+
+int mmc_switch(struct mmc *mmc, u8 set, u8 index, u8 value)
+{
+	struct mmc_cmd cmd;
+	int timeout = 1000;
+	int retries = 3;
+	int ret;
+
+	cmd.cmdidx = MMC_CMD_SWITCH;
+	cmd.resp_type = MMC_RSP_R1b;
+	cmd.cmdarg = (MMC_SWITCH_MODE_WRITE_BYTE << 24) |
+				 (index << 16) |
+				 (value << 8);
+
+	while (retries > 0) 
+	{
+		ret = tegra_mmc_send_cmd(&mPriv, &cmd, NULL);
+		/* Waiting for the ready status */
+		if (!ret) 
+		{
+			ret = mmc_send_status(mmc, timeout);
+			return ret;
+		}
+
+		retries--;
+	}
+
+	return ret;
+}
+
 static int sd_change_freq(struct mmc *mmc)
 {
 	int err;
@@ -439,6 +509,34 @@ retry_ssr:
 	return 0;
 }
 
+static int mmc_set_capacity(struct mmc *mmc, int part_num)
+{
+	switch (part_num) 
+	{
+	case 0:
+		mmc->capacity = mmc->capacity_user;
+		break;
+	case 1:
+	case 2:
+		mmc->capacity = mmc->capacity_boot;
+		break;
+	case 3:
+		mmc->capacity = mmc->capacity_rpmb;
+		break;
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+		mmc->capacity = mmc->capacity_gp[part_num - 4];
+		break;
+	default:
+		return -1;
+	}
+
+	mBlkDesc.lba = lldiv(mmc->capacity, mmc->read_bl_len);
+	return 0;
+}
+
 static int mmc_startup(struct mmc *mmc)
 {
 	int err, i;
@@ -581,7 +679,8 @@ static int mmc_startup(struct mmc *mmc)
 	}
 
 	// Same for here
-	mmc->capacity = mmc->capacity_user;
+	err = mmc_set_capacity(mmc, mBlkDesc.hwpart);
+	if (err) goto exit;
 
 	if (IS_SD(mmc))
 	{
@@ -658,6 +757,134 @@ static int mmc_startup(struct mmc *mmc)
 
 exit:
 	ASSERT(err == 0);
+	return err;
+}
+
+int mmc_switch_part(struct mmc *mmc, unsigned int part_num)
+{
+	int ret;
+
+	ret = mmc_switch(mmc, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_PART_CONF,
+			 (mmc->part_config & ~PART_ACCESS_MASK)
+			 | (part_num & PART_ACCESS_MASK));
+
+	/*
+	 * Set the capacity if the switch succeeded or was intended
+	 * to return to representing the raw device.
+	 */
+	if ((ret == 0) || ((ret == -ENODEV) && (part_num == 0))) {
+		ret = mmc_set_capacity(mmc, part_num);
+		mBlkDesc.hwpart = part_num;
+	}
+
+	return ret;
+}
+
+
+static int mmc_select_hwpart(int hwpart)
+{
+	struct blk_desc *desc = &mBlkDesc;
+	if (desc->hwpart == hwpart) return 0;
+
+	if (mMmcInstance.part_config == MMCPART_NOAVAILABLE)
+		return -EMEDIUMTYPE;
+
+	return mmc_switch_part(&mMmcInstance, hwpart);
+}
+
+int mmc_set_blocklen(struct mmc *mmc, int len)
+{
+	struct mmc_cmd cmd;
+
+	if (mmc->ddr_mode) return 0;
+
+	cmd.cmdidx = MMC_CMD_SET_BLOCKLEN;
+	cmd.resp_type = MMC_RSP_R1;
+	cmd.cmdarg = len;
+
+	return tegra_mmc_send_cmd(&mPriv, &cmd, NULL);
+}
+
+static int mmc_read_blocks(
+	struct mmc *mmc, void *dst, 
+	lbaint_t start, lbaint_t blkcnt)
+{
+	struct mmc_cmd cmd;
+	struct mmc_data data;
+
+	if (blkcnt > 1)
+		cmd.cmdidx = MMC_CMD_READ_MULTIPLE_BLOCK;
+	else
+		cmd.cmdidx = MMC_CMD_READ_SINGLE_BLOCK;
+
+	if (mmc->high_capacity)
+		cmd.cmdarg = start;
+	else
+		cmd.cmdarg = start * mmc->read_bl_len;
+
+	cmd.resp_type = MMC_RSP_R1;
+
+	data.dest = dst;
+	data.blocks = blkcnt;
+	data.blocksize = mmc->read_bl_len;
+	data.flags = MMC_DATA_READ;
+
+	if (tegra_mmc_send_cmd(&mPriv, &cmd, &data)) return 0;
+
+	if (blkcnt > 1) 
+	{
+		cmd.cmdidx = MMC_CMD_STOP_TRANSMISSION;
+		cmd.cmdarg = 0;
+		cmd.resp_type = MMC_RSP_R1b;
+		if (tegra_mmc_send_cmd(&mPriv, &cmd, NULL)) 
+		{
+			printf("mmc fail to send stop cmd\n");
+			return 0;
+		}
+	}
+
+	return blkcnt;
+}
+
+ulong mmc_bread(lbaint_t start, lbaint_t blkcnt, void *dst)
+{
+	struct mmc *mmc = &mMmcInstance;
+	struct blk_desc *block_dev = &mBlkDesc;
+	int err;
+	lbaint_t cur, blocks_todo = blkcnt;
+
+	err = mmc_select_hwpart(block_dev->hwpart);
+	if (err) goto exit;
+
+	if ((start + blkcnt) > block_dev->lba) 
+	{
+		DEBUG((EFI_D_ERROR, "MMC: block number 0x%llx exceeds max(0x%llx)\n",
+			start + blkcnt, block_dev->lba));
+		return 0;
+	}
+
+	if (mmc_set_blocklen(mmc, mmc->read_bl_len)) 
+	{
+		debug("%s: Failed to set blocklen\n", __func__);
+		return 0;
+	}
+
+	do {
+		cur = (blocks_todo > mmc->cfg->b_max) ?
+			mmc->cfg->b_max : blocks_todo;
+		if (mmc_read_blocks(mmc, dst, start, cur) != cur) 
+		{
+			debug("%s: Failed to read blocks\n", __func__);
+			return 0;
+		}
+		blocks_todo -= cur;
+		start += cur;
+		dst += cur * mmc->read_bl_len;
+	} 
+	while (blocks_todo > 0);
+
+	return blkcnt;
+exit:
 	return err;
 }
 
