@@ -83,7 +83,7 @@ STATIC UINT32 mmc_read(BIO_INSTANCE *Instance, UINT64 data_addr, UINT32 *out, UI
 {
     UINT32 ret = 0;
     UINT32 block_size;
-    UINT32 read_size = 512 * 256;
+    UINT32 read_size = 512 * 128;
     UINT8 *sptr = (UINT8 *)out;
 
     block_size = Instance->BlockMedia.BlockSize;
