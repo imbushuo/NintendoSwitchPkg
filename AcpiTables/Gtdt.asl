@@ -1,6 +1,6 @@
 000h 0000   4]                    Signature : "GTDT"    [Generic Timer Description Table]
 [004h 0004   4]                 Table Length : 00000096
-[008h 0008   1]                     Revision : 02
+[008h 0008   1]                     Revision : 03
 [009h 0009   1]                     Checksum : 00
 [00Ah 0010   6]                       Oem ID : "NVIDIA"
 [010h 0016   8]                 Oem Table ID : "NINTENDO"
@@ -8,7 +8,7 @@
 [01Ch 0028   4]              Asl Compiler ID : "IMBU"
 [020h 0032   4]        Asl Compiler Revision : 00000001
 
-[024h 0036   8]        Counter Block Address : 0000000000000000
+[024h 0036   8]        Counter Block Address : FFFFFFFFFFFFFFFF
 [02Ch 0044   4]                     Reserved : 00000000
 
 [030h 0048   4]         Secure EL1 Interrupt : 0000001D
@@ -34,7 +34,7 @@
                                 Trigger Mode : 0
                                     Polarity : 1
                                    Always On : 0
-[050h 0080   8]   Counter Read Block Address : 0000000000000000
+[050h 0080   8]   Counter Read Block Address : FFFFFFFFFFFFFFFF
 
 [058h 0088   4]         Platform Timer Count : 00000000
 [05Ch 0092   4]        Platform Timer Offset : 00000000

@@ -22,6 +22,7 @@
   VERSION_STRING                 = 1.0
 
 [Sources]
+  Dbg2.asl
   Dsdt.asl
   Facs.asl
   Fadt.aslc
