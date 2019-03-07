@@ -1,11 +1,9 @@
 # EDK2 Implementation for Nintendo Switch (Tegra210)
 
 ## Status
-Not quite useful right now. Capable to boot something from SD card.
+Capable to boot something from SD card. If you have a Linux kernel with EFI stub support, supply the device tree for any Tegra210 device (not limited to Nintendo Switch) should boot.
 
-If you have a Linux kernel with EFI stub support, supply the device tree for any Tegra210 device (not limited to Nintendo Switch) should boot.
-
-> Currently fighting ACPI. ACPI is winning (as usual). - [@zhuowei](https://twitter.com/zhuowei/status/1100207058576494592)
+ACPI also boots Windows and Linux, but limited devices are provided (only CPU at this moment).
 
 ## Device Support
 - CPU services: GIC and Arch Timer.
