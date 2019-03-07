@@ -862,7 +862,7 @@ ulong mmc_bread(UINT64 start, UINT64 blkcnt, void *dst)
 
 	if (mmc_set_blocklen(mmc, mmc->read_bl_len)) 
 	{
-		debug("%s: Failed to set blocklen\n", __func__);
+		DEBUG((EFI_D_ERROR, "%s: Failed to set blocklen\n", __func__));
 		return 0;
 	}
 
@@ -871,7 +871,7 @@ ulong mmc_bread(UINT64 start, UINT64 blkcnt, void *dst)
 			mmc->cfg->b_max : blocks_todo;
 		if (mmc_read_blocks(mmc, dst, start, cur) != cur) 
 		{
-			debug("%s: Failed to read blocks\n", __func__);
+			DEBUG((EFI_D_ERROR, "%s: Failed to read blocks\n", __func__));
 			return 0;
 		}
 		blocks_todo -= cur;

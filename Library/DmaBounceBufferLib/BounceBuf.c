@@ -15,7 +15,7 @@
 #include <Shim/DebugLib.h>
 #include <Shim/MemAlign.h>
 
-STATIC UINTN LowMemoryTop = FixedPcdGet64(PcdSystemMemoryBase) + SIZE_512MB;
+STATIC UINTN LowMemoryTop = FixedPcdGet64(PcdSystemMemoryBase) + SIZE_1GB;
 
 /**
   Allocates one or more 4KB pages of a certain memory type at a specified alignment within 2GB memory space.

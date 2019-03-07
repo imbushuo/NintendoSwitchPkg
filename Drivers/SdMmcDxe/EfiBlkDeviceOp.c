@@ -73,6 +73,62 @@ MMCHSReset(
     return EFI_SUCCESS;
 }
 
+/*
+ * Function: mmc_read
+ * Arg     : Data address on card, o/p buffer & data length
+ * Return  : 0 on Success, non zero on failure
+ * Flow    : Read data from the card to out
+ */
+STATIC UINT32 mmc_read(BIO_INSTANCE *Instance, UINT64 data_addr, UINT32 *out, UINT32 data_len)
+{
+    UINT32 ret = 0;
+    UINT32 block_size;
+    UINT32 read_size = 512;
+    UINT8 *sptr = (UINT8 *)out;
+
+    block_size = Instance->BlockMedia.BlockSize;
+
+    ASSERT(!(data_addr % block_size));
+    ASSERT(!(data_len % block_size));
+
+    /*
+    * dma onto write back memory is unsafe/nonportable,
+    * but callers to this routine normally provide
+    * write back buffers. Invalidate cache
+    * before read data from mmc.
+    */
+    WriteBackInvalidateDataCacheRange(out, data_len);
+
+    /* TODO: This function is aware of max data that can be
+    * tranferred using sdhci adma mode, need to have a cleaner
+    * implementation to keep this function independent of sdhci
+    * limitations
+    */
+    while (data_len > read_size) 
+    {
+        ret = mmc_bread((data_addr / block_size), (read_size / block_size), (VOID *) sptr);
+        if (ret == 0)
+        {
+            DEBUG((EFI_D_ERROR, "Failed Reading block @ %x\n",(UINTN) (data_addr / block_size)));
+            return 0;
+        }
+        sptr += read_size;
+        data_addr += read_size;
+        data_len -= read_size;
+    }
+
+    if (data_len)
+    {
+        ret = mmc_bread((data_addr / block_size), (read_size / block_size), (VOID *) sptr);
+        if (ret == 0)
+        {
+            DEBUG((EFI_D_ERROR, "Failed Reading block @ %x\n",(UINTN) (data_addr / block_size)));\
+            return 0;
+        }
+    }
+
+    return 1;
+}
 
 EFI_STATUS
 EFIAPI
@@ -123,10 +179,11 @@ MMCHSReadBlocks(
         return EFI_SUCCESS;
     }
 
-    rc = mmc_bread(Lba, BufferSize / BlockSize, Buffer);
-    if (rc) return EFI_SUCCESS;
-
-    return EFI_DEVICE_ERROR;
+    rc = mmc_read(Instance, (UINT64) Lba * BlockSize, Buffer, BufferSize);
+    if (rc == 1)
+        return EFI_SUCCESS;
+    else
+        return EFI_DEVICE_ERROR;
 }
 
 EFI_STATUS
