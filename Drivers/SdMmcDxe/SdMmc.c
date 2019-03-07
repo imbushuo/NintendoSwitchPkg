@@ -14,6 +14,7 @@
 #include <Protocol/BlockIo.h>
 #include <Protocol/BlockIo2.h>
 #include <Protocol/DevicePath.h>
+#include <Library/ArmLib.h>
 
 #include <Protocol/UBootClockManagement.h>
 #include <Protocol/Utc/Clock.h>
@@ -745,15 +746,7 @@ SdMmcDxeInitialize
 			}
 		}
 
-		if (FoundMbr)
-		{
-			for (UINTN k = 0; k < 512; k++)
-			{
-				DEBUG((EFI_D_INFO, "%08x ", BlkDump[k]));
-				if ((k+1) % 10 == 0) DEBUG((EFI_D_INFO, "\n"));
-			}
-		}
-		else
+		if (!FoundMbr)
 		{
 			DEBUG((EFI_D_ERROR, "(Protective) MBR not found \n"));
 			CpuDeadLoop();

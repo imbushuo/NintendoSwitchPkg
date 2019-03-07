@@ -19,6 +19,7 @@
   NintendoSwitchPkg/NintendoSwitch.dec
 
 [LibraryClasses]
+  ArmLib
   BaseLib
   ReportStatusCodeLib
   UefiLib
