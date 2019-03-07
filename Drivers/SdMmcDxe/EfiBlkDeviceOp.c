@@ -36,7 +36,7 @@ STATIC BIO_INSTANCE mBioTemplate = {
     { 
         // BlockMedia
         BIO_INSTANCE_SIGNATURE,                   // MediaId
-        FALSE,                                    // RemovableMedia
+        TRUE,                                     // RemovableMedia
         TRUE,                                     // MediaPresent
         FALSE,                                    // LogicalPartition
         TRUE,                                     // ReadOnly

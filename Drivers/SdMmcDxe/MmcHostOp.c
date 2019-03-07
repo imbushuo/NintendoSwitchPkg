@@ -807,7 +807,8 @@ int mmc_set_blocklen(struct mmc *mmc, int len)
 
 static int mmc_read_blocks(
 	struct mmc *mmc, void *dst, 
-	lbaint_t start, lbaint_t blkcnt)
+	lbaint_t start, lbaint_t blkcnt
+)
 {
 	struct mmc_cmd cmd;
 	struct mmc_data data;

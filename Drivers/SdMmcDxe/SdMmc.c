@@ -88,8 +88,9 @@ void tegra_mmc_prepare_data(
 	debug("buf: %p (%p), data->blocks: %u, data->blocksize: %u\n",
 		bbstate->bounce_buffer, bbstate->user_buffer, data->blocks,
 		data->blocksize);
-
-	writel((u32)(unsigned long)bbstate->bounce_buffer, &priv->reg->sysad);
+	
+	ASSERT(((UINTN) bbstate->bounce_buffer) < __UINT32_MAX__);
+	writel((u32)(UINTN) bbstate->bounce_buffer, &priv->reg->sysad);
 	/*
 	 * DMASEL[4:3]
 	 * 00 = Selects SDMA
@@ -234,58 +235,69 @@ int tegra_mmc_send_cmd_bounced(
 
 	writew((cmd->cmdidx << 8) | flags, &priv->reg->cmdreg);
 
-	for (i = 0; i < retry; i++) {
+	for (i = 0; i < retry; i++) 
+	{
 		mask = readl(&priv->reg->norintsts);
 		/* Command Complete */
-		if (mask & TEGRA_MMC_NORINTSTS_CMD_COMPLETE) {
-			if (!data)
-				writel(mask, &priv->reg->norintsts);
+		if (mask & TEGRA_MMC_NORINTSTS_CMD_COMPLETE) 
+		{
+			if (!data) writel(mask, &priv->reg->norintsts);
 			break;
 		}
 	}
 
-	if (i == retry) {
+	if (i == retry) 
+	{
 		printf("%s: waiting for status update\n", __func__);
 		writel(mask, &priv->reg->norintsts);
 		return -ETIMEDOUT;
 	}
 
-	if (mask & TEGRA_MMC_NORINTSTS_CMD_TIMEOUT) {
+	if (mask & TEGRA_MMC_NORINTSTS_CMD_TIMEOUT) 
+	{
 		/* Timeout Error */
 		debug("timeout: %08x cmd %d \n", mask, cmd->cmdidx);
 		writel(mask, &priv->reg->norintsts);
 		return -ETIMEDOUT;
-	} else if (mask & TEGRA_MMC_NORINTSTS_ERR_INTERRUPT) {
+	} 
+	else if (mask & TEGRA_MMC_NORINTSTS_ERR_INTERRUPT) 
+	{
 		/* Error Interrupt */
 		debug("error: %08x cmd %d \n", mask, cmd->cmdidx);
 		writel(mask, &priv->reg->norintsts);
 		return -1;
 	}
 
-	if (cmd->resp_type & MMC_RSP_PRESENT) {
-		if (cmd->resp_type & MMC_RSP_136) {
+	if (cmd->resp_type & MMC_RSP_PRESENT) 
+	{
+		if (cmd->resp_type & MMC_RSP_136) 
+		{
 			/* CRC is stripped so we need to do some shifting. */
-			for (i = 0; i < 4; i++) {
+			for (i = 0; i < 4; i++) 
+			{
 				unsigned long offset = (unsigned long)
 					(&priv->reg->rspreg3 - i);
 				cmd->response[i] = readl(offset) << 8;
 
-				if (i != 3) {
-					cmd->response[i] |=
-						readb(offset - 1);
+				if (i != 3) 
+				{
+					cmd->response[i] |= readb(offset - 1);
 				}
-				debug("cmd->resp[%d]: %08x\n",
-						i, cmd->response[i]);
+				debug("cmd->resp[%d]: %08x\n", i, cmd->response[i]);
 			}
-		} else if (cmd->resp_type & MMC_RSP_BUSY) {
-			for (i = 0; i < retry; i++) {
+		} 
+		else if (cmd->resp_type & MMC_RSP_BUSY) 
+		{
+			for (i = 0; i < retry; i++) 
+			{
 				/* PRNTDATA[23:20] : DAT[3:0] Line Signal */
 				if (readl(&priv->reg->prnsts)
 					& (1 << 20))	/* DAT[0] */
 					break;
 			}
 
-			if (i == retry) {
+			if (i == retry) 
+			{
 				printf("%s: card is still busy\n", __func__);
 				writel(mask, &priv->reg->norintsts);
 				return -ETIMEDOUT;
@@ -293,25 +305,32 @@ int tegra_mmc_send_cmd_bounced(
 
 			cmd->response[0] = readl(&priv->reg->rspreg0);
 			debug("cmd->resp[0]: %08x\n", cmd->response[0]);
-		} else {
+		} 
+		else 
+		{
 			cmd->response[0] = readl(&priv->reg->rspreg0);
 			debug("cmd->resp[0]: %08x\n", cmd->response[0]);
 		}
 	}
 
-	if (data) {
+	if (data) 
+	{
 		unsigned long start = get_timer(0);
 
-		while (1) {
+		while (1) 
+		{
 			mask = readl(&priv->reg->norintsts);
 
-			if (mask & TEGRA_MMC_NORINTSTS_ERR_INTERRUPT) {
+			if (mask & TEGRA_MMC_NORINTSTS_ERR_INTERRUPT) 
+			{
 				/* Error Interrupt */
 				writel(mask, &priv->reg->norintsts);
 				printf("%s: error during transfer: 0x%08x\n",
 						__func__, mask);
 				return -1;
-			} else if (mask & TEGRA_MMC_NORINTSTS_DMA_INTERRUPT) {
+			} 
+			else if (mask & TEGRA_MMC_NORINTSTS_DMA_INTERRUPT) 
+			{
 				/*
 				 * DMA Interrupt, restart the transfer where
 				 * it was interrupted.
@@ -322,11 +341,15 @@ int tegra_mmc_send_cmd_bounced(
 				writel(TEGRA_MMC_NORINTSTS_DMA_INTERRUPT,
 				       &priv->reg->norintsts);
 				writel(address, &priv->reg->sysad);
-			} else if (mask & TEGRA_MMC_NORINTSTS_XFER_COMPLETE) {
+			} 
+			else if (mask & TEGRA_MMC_NORINTSTS_XFER_COMPLETE) 
+			{
 				/* Transfer Complete */
 				debug("r/w is done\n");
 				break;
-			} else if (get_timer(start) > 8000UL) {
+			} 
+			else if (get_timer(start) > 8000UL) 
+			{
 				writel(mask, &priv->reg->norintsts);
 				printf("%s: MMC Timeout\n"
 				       "    Interrupt status        0x%08x\n"
@@ -360,11 +383,15 @@ int tegra_mmc_send_cmd(
 	int ret;
 	EFI_TPL Tpl = gBS->RaiseTPL(TPL_NOTIFY);
 
-	if (data) {
-		if (data->flags & MMC_DATA_READ) {
+	if (data) 
+	{
+		if (data->flags & MMC_DATA_READ) 
+		{
 			buf = data->dest;
 			bbflags = GEN_BB_WRITE;
-		} else {
+		} 
+		else 
+		{
 			buf = (void *)data->src;
 			bbflags = GEN_BB_READ;
 		}
@@ -376,7 +403,19 @@ int tegra_mmc_send_cmd(
 	ret = tegra_mmc_send_cmd_bounced(priv, cmd, data, &bbstate);
 
 	if (data)
+	{
+		if (bbstate.len >= 512 && bbstate.len_aligned >= 512)
+		{
+			UINT8* b = bbstate.bounce_buffer;
+			for (UINTN i = 1; i <= 512; i++)
+			{
+				DEBUG((EFI_D_INFO, "%x ", b[i]));
+				if (i % 20 == 0) DEBUG((EFI_D_INFO, "\n"));
+			}
+			ASSERT(FALSE);
+		}
 		bounce_buffer_stop(&bbstate);
+	}
 
 	gBS->RestoreTPL(Tpl);
 	return ret;
@@ -694,6 +733,27 @@ SdMmcDxeInitialize
 		goto exit;
 	}
 
+	// Run a self test
+	//
+	// Dump content to verify Read status
+	//
+	UINT8 BlkDump[512];
+	int blk = mmc_bread(0, 1, &BlkDump);
+	if (blk)
+	{
+		DEBUG((EFI_D_INFO, "First 512 bytes (read %d blkl): \n", blk));
+		for (UINTN Bi = 1; Bi <= 512; Bi++)
+		{
+			DEBUG((EFI_D_INFO, "%x ", BlkDump[Bi]));
+			if (Bi % 20 == 0) DEBUG((EFI_D_INFO, "\n"));
+		}
+		CpuDeadLoop();
+	}
+	else
+	{
+		CpuDeadLoop();
+	}
+	
 	// Install EFI protocol
 	ASSERT(mBlkDesc.lba != 0);
 	ASSERT(mBlkDesc.blksz != 0);

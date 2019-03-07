@@ -20,3 +20,8 @@
   CompilerIntrinsicsLib
   CacheMaintenanceLib
   MemoryAllocationLib
+  UefiBootServicesTableLib
+  PcdLib
+
+[FixedPcd]
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
