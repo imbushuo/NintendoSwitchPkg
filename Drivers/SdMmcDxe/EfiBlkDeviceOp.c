@@ -83,7 +83,7 @@ STATIC UINT32 mmc_read(BIO_INSTANCE *Instance, UINT64 data_addr, UINT32 *out, UI
 {
     UINT32 ret = 0;
     UINT32 block_size;
-    UINT32 read_size = 512;
+    UINT32 read_size = 512 * 256;
     UINT8 *sptr = (UINT8 *)out;
 
     block_size = Instance->BlockMedia.BlockSize;
@@ -119,7 +119,7 @@ STATIC UINT32 mmc_read(BIO_INSTANCE *Instance, UINT64 data_addr, UINT32 *out, UI
 
     if (data_len)
     {
-        ret = mmc_bread((data_addr / block_size), (read_size / block_size), (VOID *) sptr);
+        ret = mmc_bread((data_addr / block_size), (data_len / block_size), (VOID *) sptr);
         if (ret == 0)
         {
             DEBUG((EFI_D_ERROR, "Failed Reading block @ %x\n",(UINTN) (data_addr / block_size)));\
