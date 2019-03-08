@@ -74,60 +74,95 @@ MMCHSReset(
 }
 
 /*
- * Function: mmc_read
+ * Function: MmcReadInternal
  * Arg     : Data address on card, o/p buffer & data length
  * Return  : 0 on Success, non zero on failure
  * Flow    : Read data from the card to out
  */
-STATIC UINT32 mmc_read(BIO_INSTANCE *Instance, UINT64 data_addr, UINT32 *out, UINT32 data_len)
+STATIC UINT32 MmcReadInternal
+(
+    BIO_INSTANCE *Instance, 
+    UINT64 DataAddr, 
+    UINT32 *Buf, 
+    UINT32 DataLen
+)
 {
-    UINT32 ret = 0;
-    UINT32 block_size;
-    UINT32 read_size = 512 * 128;
-    UINT8 *sptr = (UINT8 *)out;
+    UINT32 Ret = 0;
+    UINT32 BlockSize = Instance->BlockMedia.BlockSize;
+    /* Operation block size. Will decrement until reaches 1 */
+    UINT32 OpBlkSize = 64;
+    UINT32 ReadSize;
+    UINT8 *Sptr = (UINT8 *) Buf;
 
-    block_size = Instance->BlockMedia.BlockSize;
-
-    ASSERT(!(data_addr % block_size));
-    ASSERT(!(data_len % block_size));
+    ASSERT(!(DataAddr % BlockSize));
+    ASSERT(!(DataLen % BlockSize));
 
     /*
-    * dma onto write back memory is unsafe/nonportable,
+    * DMA onto write back memory is unsafe/nonportable,
     * but callers to this routine normally provide
     * write back buffers. Invalidate cache
-    * before read data from mmc.
+    * before read data from MMC.
     */
-    WriteBackInvalidateDataCacheRange(out, data_len);
+    WriteBackInvalidateDataCacheRange(Buf, DataLen);
 
     /* TODO: This function is aware of max data that can be
     * tranferred using sdhci adma mode, need to have a cleaner
     * implementation to keep this function independent of sdhci
     * limitations
     */
-    while (data_len > read_size) 
+
+    /* Set size */
+    ReadSize = BlockSize * OpBlkSize;
+
+read:
+    while (DataLen > ReadSize) 
     {
-        ret = mmc_bread((data_addr / block_size), (read_size / block_size), (VOID *) sptr);
-        if (ret == 0)
+        Ret = mmc_bread((DataAddr / BlockSize), (ReadSize / BlockSize), (VOID *) Sptr);
+        if (Ret == 0)
         {
-            DEBUG((EFI_D_ERROR, "Failed Reading block @ %x\n",(UINTN) (data_addr / block_size)));
-            return 0;
+            // Attempt to reduce the block size
+            if (OpBlkSize > 1)
+            {
+                // Decrement op size
+                OpBlkSize = OpBlkSize / 2;
+                ReadSize = BlockSize * OpBlkSize;
+                goto read;
+            }
+            else
+            {
+                DEBUG((EFI_D_ERROR, "Failed Reading block @ %x\n",(UINTN) (DataAddr / BlockSize)));
+                goto fail;
+            }
         }
-        sptr += read_size;
-        data_addr += read_size;
-        data_len -= read_size;
+        Sptr += ReadSize;
+        DataAddr += ReadSize;
+        DataLen -= ReadSize;
     }
 
-    if (data_len)
+    if (DataLen)
     {
-        ret = mmc_bread((data_addr / block_size), (data_len / block_size), (VOID *) sptr);
-        if (ret == 0)
+        Ret = mmc_bread((DataAddr / BlockSize), (DataLen / BlockSize), (VOID *) Sptr);
+        if (Ret == 0)
         {
-            DEBUG((EFI_D_ERROR, "Failed Reading block @ %x\n",(UINTN) (data_addr / block_size)));\
-            return 0;
+            // Attempt to reduce the block size
+            if (OpBlkSize > 1)
+            {
+                // Decrement op size
+                OpBlkSize = OpBlkSize / 2;
+                ReadSize = BlockSize * OpBlkSize;
+                goto read;
+            }
+            else
+            {
+                DEBUG((EFI_D_ERROR, "Failed Reading block @ %x\n",(UINTN) (DataAddr / BlockSize)));
+                goto fail;
+            }
         }
     }
 
     return 1;
+fail:
+    return 0;
 }
 
 EFI_STATUS
@@ -179,7 +214,7 @@ MMCHSReadBlocks(
         return EFI_SUCCESS;
     }
 
-    rc = mmc_read(Instance, (UINT64) Lba * BlockSize, Buffer, BufferSize);
+    rc = MmcReadInternal(Instance, (UINT64) Lba * BlockSize, Buffer, BufferSize);
     if (rc == 1)
         return EFI_SUCCESS;
     else
