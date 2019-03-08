@@ -771,6 +771,5 @@ SdMmcDxeInitialize
 	}
 
 exit:
-    ASSERT_EFI_ERROR(Status);
     return Status;
 }

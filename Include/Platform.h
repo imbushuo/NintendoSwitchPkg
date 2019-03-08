@@ -22,7 +22,7 @@
 #define EFI_ACPI_ARM_OEM_TABLE_ID     SIGNATURE_64('N','I','N','T','E','N','D','O') // OEM table id 8 bytes long
 #define EFI_ACPI_ARM_OEM_REVISION     0x20190302
 #define EFI_ACPI_ARM_CREATOR_ID       SIGNATURE_32('I','M','B','U')
-#define EFI_ACPI_ARM_CREATOR_REVISION 0x00000001
+#define EFI_ACPI_ARM_CREATOR_REVISION 0x00000004
 
 // A macro to initialise the common header part of EFI ACPI tables as defined by
 // EFI_ACPI_DESCRIPTION_HEADER structure.
