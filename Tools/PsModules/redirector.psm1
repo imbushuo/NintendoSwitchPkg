@@ -23,7 +23,7 @@ function Get-GnuAarch64CrossCollectionPath
         if ($null -ne $path)
         {
             # Trim "gcc"
-            $ccprefix = $path.Substring(0, $path.IndexOf("gcc"))
+            $ccprefix = $path.Substring(0, $path.LastIndexOf("gcc"))
             Write-Verbose "Use GCC at $($ccprefix)."
             break
         }
