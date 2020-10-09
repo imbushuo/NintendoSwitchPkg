@@ -111,6 +111,16 @@ static ARM_MEMORY_REGION_DESCRIPTOR_EX gDeviceMemoryDescriptorEx[] =
 		AddMem, 
 		EfiMaxMemoryType
 	},
+	{
+		// HLOS memory 5 (let me try)
+		0xE0000000,
+		0x1F000000,
+		EFI_RESOURCE_SYSTEM_MEMORY,
+		SYSTEM_MEMORY_RESOURCE_ATTR_CAPABILITIES,
+		ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK,
+		AddMem,
+		EfiConventionalMemory
+	},
 	// Carveout
 	{
 		// HLOS memory 4 (they told me this, but actually not)
