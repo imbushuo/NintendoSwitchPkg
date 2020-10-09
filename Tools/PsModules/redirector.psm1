@@ -23,7 +23,7 @@ function Get-GnuAarch64CrossCollectionPath
         if ($null -ne $path)
         {
             # Trim "gcc"
-            $ccprefix = $path.Substring(0, $path.IndexOf("gcc"))
+            $ccprefix = $path.Substring(0, $path.LastIndexOf("gcc"))
             Write-Verbose "Use GCC at $($ccprefix)."
             break
         }
@@ -57,7 +57,7 @@ function Test-GnuAarch64CrossCollectionVersionRequirements
     }
 
     # Match line one using RegEx
-    $match = [regex]::Match($versionOutput[0], '(\d+\.)?(\d+\.)?(\*|\d+)$')
+    $match = [regex]::Match($versionOutput[0], '[0-9]+\.[0-9]+\.[0-9]+')
     if ($match.Success -eq $true)
     {
         # Load version .NET assembly.
