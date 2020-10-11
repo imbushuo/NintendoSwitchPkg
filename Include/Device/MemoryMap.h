@@ -117,7 +117,7 @@ static ARM_MEMORY_REGION_DESCRIPTOR_EX gDeviceMemoryDescriptorEx[] =
 		// The carveout is configured in Coreboot.
 		// VPR has been modified, do not attempt to call hardware codec
 		0xE0000000,
-		0x1E000000,
+		0x1E900000,
 		EFI_RESOURCE_SYSTEM_MEMORY,
 		SYSTEM_MEMORY_RESOURCE_ATTR_CAPABILITIES,
 		ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK,
