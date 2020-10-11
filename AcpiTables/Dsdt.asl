@@ -2,6 +2,7 @@
   Differentiated System Description Table Fields (DSDT)
 
   Copyright (c) 2014-2018, ARM Ltd. All rights reserved.<BR>
+  Copyright (c) 2019-2020, Bingxing Wang. All rights reserved.<BR>
   Portion retrieved from Surface RT 2 DSDT dump
 
   This program and the accompanying materials are licensed and made available under 
@@ -16,148 +17,10 @@
 
 #include "Platform.h"
 
-DefinitionBlock("DsdtTable.aml", "DSDT", 1, "NVIDIA", "NINTENDO", EFI_ACPI_ARM_OEM_REVISION) 
+DefinitionBlock("DsdtTable.aml", "DSDT", 1, "NVIDIA", "TEGRA210", EFI_ACPI_ARM_OEM_REVISION) 
 {
     Scope(_SB) 
     {
-        //
-        // A57x4 Processor declaration
-        //
-        Method (_OSC, 4, Serialized)  
-        { 
-          // _OSC: Operating System Capabilities
-            CreateDWordField (Arg3, 0x00, STS0)
-            CreateDWordField (Arg3, 0x04, CAP0)
-            Return (Arg3)
-        }
-
-        Name (CHID, Zero)
-        Name (TOOS, Zero)
-        Method (_INI, 0, NotSerialized)  // _INI: Initialize
-        {
-            ^CHID = RDR (0x70000000, 0x0804)
-            If (CondRefOf (\_OSI))
-            {
-                If (\_OSI ("Windows 2013"))
-                {
-                    ^TOOS = One
-                }
-            }
-        }
-
-        Method (RDR, 2, Serialized)
-        {
-            OperationRegion (GENO, SystemMemory, (Arg0 + Arg1), 0x04)
-            Field (GENO, DWordAcc, NoLock, Preserve)
-            {
-                RD32,   32
-            }
-
-            Return (RD32) /* \_SB_.RDR_.RD32 */
-        }
-
-        Method (RDF, 4, Serialized)
-        {
-            Return (((RDR (Arg0, Arg1) & (Arg2 << Arg3)) >> Arg3))
-        }
-
-        Method (UCRS, 4, NotSerialized)
-        {
-            Name (RSRC, ResourceTemplate ()
-            {
-                Memory32Fixed (ReadWrite,
-                    0x00000000,         // Address Base
-                    0x00000000,         // Address Length
-                    _Y02)
-                Interrupt (ResourceConsumer, Level, ActiveHigh, Shared, ,, _Y03)
-                {
-                    0x00000000,
-                }
-            })
-            CreateDWordField (RSRC, \_SB.UCRS._Y02._BAS, MBAS)  // _BAS: Base Address
-            CreateDWordField (RSRC, \_SB.UCRS._Y02._LEN, MBLE)  // _LEN: Length
-            CreateWordField (RSRC, \_SB.UCRS._Y03._INT, INTN)  // _INT: Interrupts
-            CreateField (RSRC, \_SB.UCRS._Y03._SHR, 0x02, SHRN)  // _SHR: Shareable
-            MBAS = Arg0
-            MBLE = Arg1
-            INTN = Arg2
-            SHRN = Arg3
-            Return (RSRC) /* \_SB_.UCRS.RSRC */
-        }
-
-        Method (GCRS, 3, NotSerialized)
-        {
-            Name (RSRC, ResourceTemplate ()
-            {
-                Memory32Fixed (ReadWrite,
-                    0x00000000,         // Address Base
-                    0x00000000,         // Address Length
-                    _Y00)
-                Interrupt (ResourceConsumer, Level, ActiveHigh, Exclusive, ,, _Y01)
-                {
-                    0x00000000,
-                }
-            })
-            CreateDWordField (RSRC, \_SB.GCRS._Y00._BAS, MBAS)  // _BAS: Base Address
-            CreateDWordField (RSRC, \_SB.GCRS._Y00._LEN, MBLE)  // _LEN: Length
-            CreateWordField (RSRC, \_SB.GCRS._Y01._INT, INTN)  // _INT: Interrupts
-            MBAS = Arg0
-            MBLE = Arg1
-            INTN = Arg2
-            Return (RSRC) /* \_SB_.GCRS.RSRC */
-        }
-
-        OperationRegion (CLKR, SystemMemory, 0x60006000, 0x1000)
-        Field (CLKR, ByteAcc, NoLock, Preserve)
-        {
-            Offset (0x04), 
-                ,   6, 
-            UAAE,   1, 
-            UABE,   1, 
-            GPIE,   1, 
-            SD2E,   1, 
-                ,   1, 
-            I2SE,   1, 
-            I21E,   1, 
-                ,   1, 
-            SD1E,   1, 
-            SD4E,   1, 
-                ,   6, 
-            US1E,   1, 
-                ,   3, 
-            Offset (0x08), 
-                ,   9, 
-            SP1E,   1, 
-                ,   2, 
-            SP2E,   1, 
-                ,   1, 
-            SP3E,   1, 
-            I24E,   1, 
-                ,   6, 
-            I22E,   1, 
-            UACE,   1, 
-                ,   2, 
-            US2E,   1, 
-            US3E,   1, 
-            Offset (0x0C), 
-                ,   1, 
-            UADE,   1, 
-            UAEE,   1, 
-            I23E,   1, 
-            SP4E,   1, 
-            SD3E,   1, 
-                ,   19, 
-            XUSE,   1, 
-            Offset (0x14), 
-                ,   4, 
-            KBCE,   1, 
-            Offset (0x358), 
-            Offset (0x359), 
-            SP5E,   1, 
-            SP6E,   1, 
-                ,   19, 
-            HDAE,   1
-        }
 
         Device(CPU0) 
         {
@@ -183,71 +46,93 @@ DefinitionBlock("DsdtTable.aml", "DSDT", 1, "NVIDIA", "NINTENDO", EFI_ACPI_ARM_O
             Name(_UID, 3)
         }
 
-        Device (USB1)
+        // Helper functions
+        Method (GCRS, 3, NotSerialized)
         {
-            OperationRegion (USCR, SystemMemory, 0x7D000000, 0x1800)
-            Field (USCR, DWordAcc, NoLock, Preserve)
+            Name (RSRC, ResourceTemplate ()
             {
-                UNID,   16, 
-                Offset (0x154),
-                TXPR,   32, 
-                Offset (0x174),
-                SCPR,   32, 
-                Offset (0x1F8),
-                UMOD,   32
-            }
-
-            Method (_HID, 0, NotSerialized)  // _HID: Hardware ID
-            {
-                Return ("NVDA0103")
-            }
-
-            Name (_CID, "ACPI\\PNP0D20")  // _CID: Compatible ID
-            Name (_HRV, 0x02)  // _HRV: Hardware Revision
-            Name (_UID, Zero)  // _UID: Unique ID
-            Method (_CRS, 0, NotSerialized)  // _CRS: Current Resource Settings
-            {
-                Local0 = (0x7D000000 + 0x0100)
-                Local1 = (0x1800 - 0x0100)
-                Return (UCRS (Local0, Local1, 0x34, 0x03))
-            }
+                Memory32Fixed (ReadWrite,
+                    0x00000000,         // Address Base
+                    0x00000000,         // Address Length
+                    _Y00)
+                Interrupt (ResourceConsumer, Level, ActiveHigh, Exclusive, ,, _Y01)
+                {
+                    0x00000000,
+                }
+            })
+            CreateDWordField (RSRC, \_SB.GCRS._Y00._BAS, MBAS)  // _BAS: Base Address
+            CreateDWordField (RSRC, \_SB.GCRS._Y00._LEN, MBLE)  // _LEN: Length
+            CreateWordField (RSRC, \_SB.GCRS._Y01._INT, INTN)  // _INT: Interrupts
+            MBAS = Arg0
+            MBLE = Arg1
+            INTN = Arg2
+            Return (RSRC)
         }
 
+        Method (CRSD, 2, NotSerialized)
+        {
+            Name (RSRC, ResourceTemplate ()
+            {
+                FixedDMA (0x0000, 0x0000, Width32bit, _Y07)
+                FixedDMA (0x0001, 0x0001, Width32bit, _Y08)
+            })
+            CreateWordField (RSRC, One, REQ1)
+            CreateWordField (RSRC, \_SB.CRSD._Y07._TYP, CHN1)  // _TYP: Type
+            CreateWordField (RSRC, \_SB.CRSD._Y08._DMA, REQ2)  // _DMA: Direct Memory Access
+            CreateWordField (RSRC, \_SB.CRSD._Y08._TYP, CHN2)  // _TYP: Type
+            REQ1 = Arg0
+            REQ2 = (Arg0 | 0x20)
+            CHN1 = Arg1
+            CHN2 = Arg1++
+            Return (RSRC)
+        }
+
+        Method (CRS3, 5, NotSerialized)
+        {
+            Local0 = GCRS (Arg0, Arg1, Arg2)
+            Local1 = CRSD (Arg3, Arg4)
+            Return (ConcatenateResTemplate (Local0, Local1))
+        }
+
+        // Micro SD Card Slot
         Device (SDM1)
         {
-            Method (_HID, 0, NotSerialized)  // _HID: Hardware ID
+            Method (_HID, 0, NotSerialized)
             {
                 Return ("NVDA0212")
             }
 
-            Name (_CID, "PNP0D40" /* SDA Standard Compliant SD Host Controller */)  // _CID: Compatible ID
-            Name (_UID, Zero)  // _UID: Unique ID
-            Method (_CRS, 0, NotSerialized)  // _CRS: Current Resource Settings
+            Name (_CID, "PNP0D40")
+            Name (_UID, Zero)
+            Method (_CRS, 0, NotSerialized)
             {
-                Local0 = GCRS (0x78000000, 0x0200, 0x2E)
+                Local0 = GCRS (0x700B0000, 0x0200, 0x2E)
                 Return (Local0)
             }
 
-            Name (STAF, Zero)
-            Method (_STA, 0, NotSerialized)  // _STA: Status
+            Method (_STA, 0, NotSerialized)
             {
-                If ((^STAF == 0xF0))
-                {
-                    Return (Zero)
-                }
+                Return (0x0F)
+            }
+        }
 
-                If (^STAF)
-                {
-                    Return (0x0F)
-                }
+        // UART 2: Right Joy-Con
+        Device (UAR2)
+        {
+            Method (_HID, 0, NotSerialized)
+            {
+                Return ("NVDA0100")
+            }
 
-                If (!^^SD1E)
-                {
-                    ^STAF = One
-                    Return (0x0F)
-                }
+            Name (_UID, One)
+            Method (_CRS, 0, NotSerialized)
+            {
+                Return (CRS3 (0x70006040, 0x40, 0x45, 0x09, 0x02))
+            }
 
-                Return (Zero)
+            Method (_STA, 0, NotSerialized)
+            {
+                Return (0x0F)
             }
         }
 

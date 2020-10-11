@@ -67,7 +67,7 @@ READ_LOCK_STATUS   = TRUE
   INF EmbeddedPkg/ResetRuntimeDxe/ResetRuntimeDxe.inf
   INF EmbeddedPkg/MetronomeDxe/MetronomeDxe.inf
   INF EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf
-  INF MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf
+  INF MdeModulePkg/Universal/Variable/RuntimeDxe/VariableRuntimeDxe.inf
 
   # Security Stub
   INF MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
@@ -80,6 +80,10 @@ READ_LOCK_STATUS   = TRUE
 
   # Display
   INF NintendoSwitchPkg/Drivers/SimpleFbDxe/SimpleFbDxe.inf
+
+  # Serial
+  INF MdeModulePkg/Universal/SerialDxe/SerialDxe.inf
+  INF MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf
 
   # BDS
   INF MdeModulePkg/Universal/PrintDxe/PrintDxe.inf

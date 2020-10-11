@@ -1,14 +1,4 @@
 Include/FwReleaseInfo.h
-Drivers/SdMmcDxe_/Library/sdmmc_t210.h
-Drivers/SdMmcDxe_/SdMmc.c
-Drivers/SdMmcDxe_/SdMmc.h
-Drivers/SdMmcDxe_/SdMmcDxe.inf
-Drivers/SdMmcDxe_/Library/mmc.h
-Drivers/SdMmcDxe_/Library/sd.h
-Drivers/SdMmcDxe_/Library/sdmmc.c
-Drivers/SdMmcDxe_/Library/sdmmc.h
-Drivers/SdMmcDxe_/Library/sdmmc_driver.c
-Drivers/SdMmcDxe_/Library/sdmmc_driver.h
-Drivers/SdMmcDxe_/Library/shim.h
 Tools/grubaa64.efi
 AcpiTables/T114Ref.asl
+.vscode

@@ -55,7 +55,6 @@
   gArmTokenSpaceGuid.PcdArmPrimaryCore
   gArmTokenSpaceGuid.PcdFdSize
   gEmbeddedTokenSpaceGuid.PcdDmaDeviceOffset
-  gEmbeddedTokenSpaceGuid.PcdPrePiCpuMemorySize
   gArmTokenSpaceGuid.PcdSystemMemoryBase
   gArmTokenSpaceGuid.PcdSystemMemorySize
   gNintendoSwitchPkgTokenSpaceGuid.PcdTrustZoneCarveoutSize

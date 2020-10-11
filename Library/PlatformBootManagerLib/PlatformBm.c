@@ -631,3 +631,28 @@ PlatformBootManagerWaitCallback (
     Print (L".");
   }
 }
+
+/**
+  The function is called when no boot option could be launched,
+  including platform recovery options and options pointing to applications
+  built into firmware volumes.
+  If this function returns, BDS attempts to enter an infinite loop.
+**/
+VOID EFIAPI PlatformBootManagerUnableToBoot(VOID)
+{
+  EFI_STATUS                   Status;
+  EFI_BOOT_MANAGER_LOAD_OPTION BootManagerMenu;
+
+  //
+  // BootManagerMenu doesn't contain the correct information when return status
+  // is EFI_NOT_FOUND.
+  //
+  Status = EfiBootManagerGetBootManagerMenu(&BootManagerMenu);
+  if (EFI_ERROR(Status)) {
+    return;
+  }
+
+  for (;;) {
+    EfiBootManagerBoot(&BootManagerMenu);
+  }
+}
