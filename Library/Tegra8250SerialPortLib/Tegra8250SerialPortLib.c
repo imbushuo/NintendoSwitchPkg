@@ -102,7 +102,26 @@ SerialPortRead
 	IN  UINTN     NumberOfBytes
 )
 {
-	return 0;
+	UINTN  Result;
+
+	if (NULL == Buffer) {
+    	return 0;
+  	}
+
+	for (Result = 0; NumberOfBytes-- != 0; Result++, Buffer++) {
+		//
+    	// Wait for the serial port to have some data.
+    	//
+		while (tegra210_uart_tst_byte() == 0) {
+		}
+		
+		//
+    	// Read byte from the receive buffer.
+    	//
+    	*Buffer = read8(&uart_ptr->rbr);
+	}
+
+	return Result;
 }
 
 BOOLEAN
@@ -112,6 +131,10 @@ SerialPortPoll
 	VOID
 )
 {
+	if (tegra210_uart_tst_byte() != 0) {
+		return TRUE;
+	}
+
 	return FALSE;
 }
 

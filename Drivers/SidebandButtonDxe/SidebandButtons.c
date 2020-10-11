@@ -34,17 +34,17 @@ EFIAPI SidebandButtonsPoll(
 {
     if (!gpio_read(GPIO_BY_NAME(BUTTON_VOL_DOWN)))
     {
-        DEBUG((EFI_D_ERROR | EFI_D_INFO, "Volume down button pressed \n"));
+        // DEBUG((EFI_D_ERROR | EFI_D_INFO, "Volume down button pressed \n"));
     }
     
     if (!gpio_read(GPIO_BY_NAME(BUTTON_VOL_UP)))
     {
-        DEBUG((EFI_D_ERROR | EFI_D_INFO, "Volume up button pressed \n"));
+        // DEBUG((EFI_D_ERROR | EFI_D_INFO, "Volume up button pressed \n"));
     }
 
     if (mPmicProtocol->QueryPowerButton())
     {
-        DEBUG((EFI_D_ERROR | EFI_D_INFO, "Power button pressed \n"));
+        // DEBUG((EFI_D_ERROR | EFI_D_INFO, "Power button pressed \n"));
     }
 }
 
