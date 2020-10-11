@@ -24,6 +24,7 @@
 
 // See memory map here.
 #include <Device/MemoryMap.h>
+#include <Device/NvAddressMap.h>
 
 extern UINT64 mSystemMemoryEnd;
 
