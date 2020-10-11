@@ -303,7 +303,7 @@
   # Display
   # Simple FrameBuffer
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0xdfb80000
-  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|768
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|720
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|1280
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferPixelBpp|32
 
