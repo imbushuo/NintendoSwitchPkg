@@ -94,28 +94,6 @@ DefinitionBlock("DsdtTable.aml", "DSDT", 1, "NVIDIA", "TEGRA210", EFI_ACPI_ARM_O
             Return (ConcatenateResTemplate (Local0, Local1))
         }
 
-        // Micro SD Card Slot
-        Device (SDM1)
-        {
-            Method (_HID, 0, NotSerialized)
-            {
-                Return ("NVDA0212")
-            }
-
-            Name (_CID, "PNP0D40")
-            Name (_UID, Zero)
-            Method (_CRS, 0, NotSerialized)
-            {
-                Local0 = GCRS (0x700B0000, 0x0200, 0x2E)
-                Return (Local0)
-            }
-
-            Method (_STA, 0, NotSerialized)
-            {
-                Return (0x0F)
-            }
-        }
-
         // UART 2: Right Joy-Con
         Device (UAR2)
         {

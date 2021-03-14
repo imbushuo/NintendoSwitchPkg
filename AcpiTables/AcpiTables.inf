@@ -22,12 +22,12 @@
   VERSION_STRING                 = 1.0
 
 [Sources]
-  Dbg2.asl
-  Dsdt.asl
-  Facs.asl
+  Dbg2.aslc
+  Facs.aslc
   Fadt.aslc
-  Gtdt.asl
-  Madt.asl
+  Gtdt.aslc
+  Madt.aslc
+  Dsdt/Dsdt.asl
 
 [Packages]
   ArmPkg/ArmPkg.dec
@@ -55,5 +55,4 @@
   gArmTokenSpaceGuid.PcdGenericWatchdogRefreshBase
 
   gArmPlatformTokenSpaceGuid.PcdSerialDbgRegisterBase
-
   gArmPlatformTokenSpaceGuid.PcdWatchdogCount
