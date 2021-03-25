@@ -13,9 +13,17 @@ ACPI also boots Windows and Linux, but limited devices are provided (only CPU at
 - MicroSD (should support SDSC, HC. XC probed and have partition table shown, but not intensively tested). eMMC support will be added soon.
 - Screen and FrameBuffer (need special [Coreboot](https://github.com/imbushuo/Coreboot))
 - Side-band buttons, not yet registered as EFI Input Device.
+- UART (Right Joy Con, 115200, 8n1)
+
+## Windows Kernel Debugger Enablement
+
+    bcdedit /store E:\EFI\Microsoft\Boot\BCD /set {default} debug on
+    bcdedit /store E:\EFI\Microsoft\Boot\BCD /dbgsettings serial debugport:1 baudrate:115200
+    
+Plug in connector on the right-side Joy Con and connect to PC. Use WinDbg serial connection and it should work.
 
 ## Planned / In-Progress
-- UART
+
 - EHCI USB host
 - eMMC
 - Sideband buttons as input device
