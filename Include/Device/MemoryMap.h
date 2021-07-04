@@ -93,8 +93,11 @@ static ARM_MEMORY_REGION_DESCRIPTOR_EX gDeviceMemoryDescriptorEx[] =
 	},
 	{
 		// HLOS memory 2
+		// Be aware that we are avoiding carveout regions and fb.
+		// The carveout is configured in Coreboot.
+		// VPR is 0, do not attempt to call hardware codec
 		0x801f0000,
-		0x5f990000,
+		0x75810000,
 		EFI_RESOURCE_SYSTEM_MEMORY,
 		SYSTEM_MEMORY_RESOURCE_ATTR_CAPABILITIES,
 		ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK,
@@ -103,26 +106,13 @@ static ARM_MEMORY_REGION_DESCRIPTOR_EX gDeviceMemoryDescriptorEx[] =
 	},
 	{
 		// Display Reserved
-		0xdfb80000,
-		0x480000,
+		0xf5a00000,
+		0x400000,
 		EFI_RESOURCE_MEMORY_RESERVED, 
 		EFI_RESOURCE_ATTRIBUTE_WRITE_THROUGH_CACHEABLE, 
 		ARM_MEMORY_REGION_ATTRIBUTE_WRITE_THROUGH, 
 		AddMem, 
 		EfiMaxMemoryType
-	},
-	{
-		// HLOS memory 5
-		// Be aware that we are avoiding carveout regions.
-		// The carveout is configured in Coreboot.
-		// VPR has been modified, do not attempt to call hardware codec
-		0xE0000000,
-		0x1E900000,
-		EFI_RESOURCE_SYSTEM_MEMORY,
-		SYSTEM_MEMORY_RESOURCE_ATTR_CAPABILITIES,
-		ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK,
-		AddMem,
-		EfiConventionalMemory
 	},
 	// Carveout
 	{

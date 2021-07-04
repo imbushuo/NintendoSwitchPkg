@@ -34,10 +34,10 @@
 
 [PcdsFixedAtBuild.common]
   # Simple FrameBuffer
-  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0xc0000000|UINT32|0x0000a400
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0xf5a00000|UINT32|0x0000a400
   # It's actually vertical.
   # Maybe in the future we can workaround this in EL2
-  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|768|UINT32|0x0000a401
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|720|UINT32|0x0000a401
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|1280|UINT32|0x0000a402
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferPixelBpp|32|UINT32|0x0000a403
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferVisibleWidth|720|UINT32|0x0000a405
