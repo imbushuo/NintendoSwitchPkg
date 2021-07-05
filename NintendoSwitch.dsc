@@ -305,13 +305,13 @@
 
   # Display
   # Simple FrameBuffer
-  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0xdfb80000
+  gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferAddress|0xf5a00000
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|720
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|1280
   gNintendoSwitchPkgTokenSpaceGuid.PcdMipiFrameBufferPixelBpp|32
 
   # TrustZone carveout, 14MB below slot 1 top
-  gNintendoSwitchPkgTokenSpaceGuid.PcdTrustZoneCarveoutSize|0xe00000
+  gNintendoSwitchPkgTokenSpaceGuid.PcdTrustZoneCarveoutSize|0
 
   #
   # Make VariableRuntimeDxe work at emulated non-volatile variable mode.
